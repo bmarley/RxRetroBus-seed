@@ -1,4 +1,4 @@
-package blake.rxretrobus_seed;
+package blake.rxretrobusseed;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

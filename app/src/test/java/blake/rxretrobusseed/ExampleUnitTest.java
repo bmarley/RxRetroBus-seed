@@ -1,4 +1,4 @@
-package blake.rxretrobus_seed;
+package blake.rxretrobusseed;
 
 import org.junit.Test;
 
