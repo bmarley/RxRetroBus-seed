@@ -1,6 +1,4 @@
-package blake.rxretrobusseed;
-
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+package com.blarley.rxretrobusseed.util;
 
 import javax.inject.Singleton;
 
@@ -8,6 +6,7 @@ import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
@@ -16,27 +15,17 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 @Module
 public class NetModule {
 
-    String mBaseUrl;
     OkHttpClient mOkHttpClient = new OkHttpClient()
             .newBuilder()
             .build();
 
-    // Constructor needs one parameter to instantiate.
-    public NetModule(String baseUrl) {
-        this.mBaseUrl = baseUrl;
-    }
-
     @Provides
     @Singleton
-    Retrofit provideRetrofitBuilder() {
+    Retrofit.Builder provideRetrofitBuilder() {
 
-        Retrofit retrofit = new Retrofit.Builder()
+        return new Retrofit.Builder()
                 .addConverterFactory(JacksonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .baseUrl(mBaseUrl)
-                .client(mOkHttpClient)
-                .build();
-
-        return retrofit;
+                .client(mOkHttpClient);
     }
 }

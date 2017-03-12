@@ -1,4 +1,4 @@
-package blake.rxretrobusseed;
+package com.blarley.rxretrobusseed.models;
 
 /**
  * Created by Blake on 1/21/17.

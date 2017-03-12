@@ -1,4 +1,4 @@
-package blake.rxretrobusseed.annotationprocessor.processor;
+package com.blarley.rxretrobusseed.annotationprocessor.processor;
 
 
 import java.io.IOException;
@@ -14,14 +14,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
-@SupportedAnnotationTypes("blake.rxretrobusseed.annotationprocessor.processor.GenerateEvents")
+@SupportedAnnotationTypes("com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         StringBuilder builder = new StringBuilder()
-                .append("package blake.rxretrobusseed.annotationprocessor.generated;\n\n")
+                .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("public class GeneratedClass {\n\n") // open class
                 .append("\tpublic String getMessage() {\n") // open method
                 .append("\t\treturn \"");
@@ -40,7 +40,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                 .append("}\n"); // close class
 
         try { // write the file
-            JavaFileObject source = processingEnv.getFiler().createSourceFile("blake.rxretrobusseed.annotationprocessor.generated.GeneratedClass");
+            JavaFileObject source = processingEnv.getFiler().createSourceFile("com.blarley.rxretrobusseed.annotationprocessor.generated.GeneratedClass");
 
 
             Writer writer = source.openWriter();

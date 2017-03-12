@@ -1,4 +1,4 @@
-package blake.rxretrobusseed.annotationprocessor.processor;
+package com.blarley.rxretrobusseed.annotationprocessor.processor;
 
 /**
  * Created by Blake on 1/22/17.

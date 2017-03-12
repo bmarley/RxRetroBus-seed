@@ -1,4 +1,4 @@
-package blake.rxretrobusseed;
+package com.blarley.rxretrobusseed.util;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

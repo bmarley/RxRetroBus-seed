@@ -1,9 +1,8 @@
-package blake.rxretrobusseed;
+package com.blarley.rxretrobusseed.util;
 
 import javax.inject.Singleton;
 
 import dagger.Component;
-import retrofit2.Retrofit;
 
 /**
  * Created by Blake on 1/21/17.
@@ -11,5 +10,5 @@ import retrofit2.Retrofit;
 @Singleton
 @Component(modules= { NetModule.class })
 public interface NetComponent {
-    Retrofit provideRetrofitBuilder();
+    void inject(ClientsModule clientsModule);
 }
