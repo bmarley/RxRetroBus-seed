@@ -2,7 +2,7 @@ package com.blarley.rxretrobusseed;
 
 import android.app.Application;
 
-import com.blarley.rxretrobusseed.api.Clients;
+import com.blarley.rxretrobusseed.annotationprocessor.generated.Clients;
 import com.blarley.rxretrobusseed.bus.RxBus;
 
 import okhttp3.OkHttpClient;

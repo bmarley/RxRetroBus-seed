@@ -3,7 +3,7 @@ package com.blarley.rxretrobusseed.annotationprocessor.processor;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -15,13 +15,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes("com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents")
@@ -31,13 +27,18 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
+        List<String> generatedClasses = new ArrayList<>();
+        String generatedPrefix = "RxRetroBus_";
 
-        // for each javax.lang.model.element.Element annotated with the CustomAnnotation
+        // Get the Retrofit interfaces annotated with GenerateEvents
         for (Element element : roundEnv.getElementsAnnotatedWith(GenerateEvents.class)) {
 
             String baseType = element.asType().toString();
             String baseClassName = element.getSimpleName().toString();
-            String generatedClassName = "RxRetroBus" + baseClassName;
+            String generatedClassName = generatedPrefix + baseClassName;
+
+            //Add generated Class to create Clients file
+            generatedClasses.add(generatedClassName);
 
             String baseUrl = element.getAnnotation(GenerateEvents.class).baseUrl();
 
@@ -131,7 +132,8 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             //End Class definition
             builder.append("}\n");
 
-            try { // write the file
+            //Write the file
+            try {
                 JavaFileObject source = processingEnv.getFiler().createSourceFile("com.blarley.rxretrobusseed.annotationprocessor.generated." + generatedClassName);
 
                 Writer writer = source.openWriter();
@@ -139,10 +141,44 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
-                // Note: calling e.printStackTrace() will print IO errors
-                // that occur from the file already existing after its first run, this is normal
             }
+        }
 
+        //Clients String builder
+        StringBuilder clientsFile = new StringBuilder()
+                .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
+                .append("import retrofit2.Retrofit;\n\n")
+                .append("public class Clients {\n");
+
+        StringBuilder constructorDefinition = new StringBuilder();
+
+        //Append the instance fields
+        for(String generatedClass: generatedClasses) {
+            String[] str = generatedClass.split("_");
+            String baseClassName = str[1];
+            clientsFile.append("\tpublic " + generatedClass + " " + baseClassName + ";\n");
+
+            constructorDefinition.append("\t\tthis." + baseClassName + " = new " + generatedClass + "(retrofitBuilder);\n");
+        }
+
+        //Append the constructor declaration
+        clientsFile.append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder) {\n");
+
+        //Append the constructor definition
+        clientsFile.append(constructorDefinition);
+
+        //Close the constructor and class
+        clientsFile.append("\t}\n")
+                    .append("}");
+
+        try {
+            JavaFileObject source = processingEnv.getFiler().createSourceFile("com.blarley.rxretrobusseed.annotationprocessor.generated.Clients");
+
+            Writer writer = source.openWriter();
+            writer.write(clientsFile.toString());
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
         }
 
         return true;
