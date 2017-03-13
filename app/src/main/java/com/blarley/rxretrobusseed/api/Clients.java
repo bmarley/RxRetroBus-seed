@@ -1,20 +1,17 @@
 package com.blarley.rxretrobusseed.api;
 
-import android.app.Application;
+import com.blarley.rxretrobusseed.annotationprocessor.generated.RxRetroBusExampleGet;
 
-import com.blarley.rxretrobusseed.App;
-
-import javax.inject.Inject;
+import retrofit2.Retrofit;
 
 /**
  * Created by Blake on 3/11/17.
  */
 
 public class Clients {
-    @Inject
-    public ExampleGet exampleGet;
+    public RxRetroBusExampleGet ExampleGet;
 
-    public Clients(Application application) {
-        ((App) application).getClientsComponent().inject(this);
+    public Clients(Retrofit.Builder retrofitBuilder) {
+        this.ExampleGet = new RxRetroBusExampleGet(retrofitBuilder);
     }
 }

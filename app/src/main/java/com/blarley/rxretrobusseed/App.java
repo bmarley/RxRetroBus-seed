@@ -3,34 +3,33 @@ package com.blarley.rxretrobusseed;
 import android.app.Application;
 
 import com.blarley.rxretrobusseed.api.Clients;
-import com.blarley.rxretrobusseed.util.ClientsComponent;
-import com.blarley.rxretrobusseed.util.ClientsModule;
-import com.blarley.rxretrobusseed.util.DaggerClientsComponent;
-import com.blarley.rxretrobusseed.util.DaggerNetComponent;
-import com.blarley.rxretrobusseed.util.NetComponent;
-import com.blarley.rxretrobusseed.util.NetModule;
+import com.blarley.rxretrobusseed.bus.RxBus;
+
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class App extends Application {
-    private NetComponent mNetComponent;
-    private ClientsComponent mClientsComponent;
+    private OkHttpClient okHttpClient;
+    private Retrofit.Builder retrofitBuilder;
+
     public static Clients clients;
+    public static RxBus bus;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mNetComponent = DaggerNetComponent.builder()
-                .netModule(new NetModule())
+        okHttpClient = new OkHttpClient()
+                .newBuilder()
                 .build();
 
-        mClientsComponent = DaggerClientsComponent.builder()
-                .clientsModule(new ClientsModule(mNetComponent))
-                .build();
+        retrofitBuilder = new Retrofit.Builder()
+                    .addConverterFactory(JacksonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .client(okHttpClient);
 
-        clients = new Clients(this);
-    }
-
-    public ClientsComponent getClientsComponent() {
-        return mClientsComponent;
+        clients = new Clients(retrofitBuilder);
+        bus = new RxBus();
     }
 }
