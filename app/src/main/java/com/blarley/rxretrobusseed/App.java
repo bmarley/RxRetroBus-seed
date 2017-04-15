@@ -3,7 +3,7 @@ package com.blarley.rxretrobusseed;
 import android.app.Application;
 
 import com.blarley.rxretrobusseed.annotationprocessor.generated.Clients;
-import com.blarley.rxretrobusseed.bus.RxBus;
+import com.blarley.rxretrobusseed.library.bus.RxRetroBus;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -15,7 +15,7 @@ public class App extends Application {
     private Retrofit.Builder retrofitBuilder;
 
     public static Clients clients;
-    public static RxBus bus;
+    public static RxRetroBus bus;
 
     @Override
     public void onCreate() {
@@ -28,8 +28,7 @@ public class App extends Application {
                     .addConverterFactory(JacksonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .client(okHttpClient);
-
-        clients = new Clients(retrofitBuilder);
-        bus = new RxBus();
+        bus = new RxRetroBus();
+        clients = new Clients(retrofitBuilder, bus);
     }
 }

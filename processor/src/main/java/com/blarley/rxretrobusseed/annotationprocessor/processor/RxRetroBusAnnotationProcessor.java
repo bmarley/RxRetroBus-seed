@@ -48,7 +48,8 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                 .append("import retrofit2.Retrofit;\n" +
                         "import io.reactivex.android.schedulers.AndroidSchedulers;\n" +
                         "import io.reactivex.functions.Consumer;\n" +
-                        "import io.reactivex.schedulers.Schedulers;\n");
+                        "import io.reactivex.schedulers.Schedulers;\n" +
+                        "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
 
             //Begin class definition
             builder.append("public class " + generatedClassName + " {\n\n");
@@ -56,11 +57,14 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             //Retrofit client impl
             builder.append("\tprivate " + baseType + " client;\n");
 
+            builder.append("\tprivate RxRetroBus bus;\n");
+
             //Constructor - builds Retrofit client
-            builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder) { \n" +
+            builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
                             "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
                             "\t\t.build()\n" +
                             "\t\t.create(" + baseType + ".class);\n" +
+                            "\t\tthis.bus = bus;\n" +
                             "\t}\n\n");
 
             //Get Annotated methods within the class - the builds the method used to make calls
@@ -90,14 +94,6 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                     builder.append(parameters)
                             .append(") {\n");
 
-                    //Begin body, this method should call the same method on the Retrofit client
-                    builder.append("\t\tclient." + methodName + "(").append(parameters).append(")\n");
-
-                    //Subscribe on New thread, observe on the main thread, and subscribe!
-                    builder.append("\t\t\t.subscribeOn(Schedulers.newThread())\n" +
-                                    "\t\t\t.observeOn(AndroidSchedulers.mainThread())\n" +
-                                    "\t\t\t.subscribe(\n");
-
                     //Need to strip off the Observable and get parameterized class
                     //TODO: Is this a better way to do this?
                     String observable = method.getReturnType().toString();
@@ -108,24 +104,38 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                         innerClass += matcher.group(1);
                     }
 
-                    //Provide onNext and onError Consumers
-                    //TODO: Figure out how the bus is going to work
-                    //TODO: Go look at how Dagger generates classes, get rid of \t
-                    builder.append("\t\t\t\tnew Consumer<").append(innerClass).append(">() {\n")
-                            .append("\t\t\t\t\t@Override\n")
-                            .append("\t\t\t\t\tpublic void accept(").append(innerClass).append(" model) throws Exception {\n")
-                            .append("\t\t\t\t\t\tSystem.out.println(model.getExampleField());\n")
-                            .append("\t\t\t\t\t}\n")
-                            .append("\t\t\t\t},\n")
-                            .append("\t\t\t\tnew Consumer<Throwable>() {\n")
-                            .append("\t\t\t\t\t@Override\n")
-                            .append("\t\t\t\t\tpublic void accept(Throwable throwable) throws Exception {\n")
-                            .append("\t\t\t\t\t}\n")
-                            .append("\t\t\t\t}\n")
-                            .append("\t\t\t);\n");
+                    builder.append("\t\tbus.addObservable(client." + methodName + "(")
+                            .append(parameters)
+                            .append("),")
+                            .append(innerClass + ".class")
+                            .append(", \"test\", false);\n");
+
+//                    //Begin body, this method should call the same method on the Retrofit client
+//                    builder.append("\t\tclient." + methodName + "(").append(parameters).append(")\n");
+//
+//                    //Subscribe on New thread, observe on the main thread, and subscribe!
+//                    builder.append("\t\t\t.subscribeOn(Schedulers.newThread())\n" +
+//                                    "\t\t\t.observeOn(AndroidSchedulers.mainThread())\n" +
+//                                    "\t\t\t.subscribe(\n");
+//
+//                    //Provide onNext and onError Consumers
+//                    //TODO: Figure out how the bus is going to work
+//                    //TODO: Go look at how Dagger generates classes, get rid of \t
+//                    builder.append("\t\t\t\tnew Consumer<").append(innerClass).append(">() {\n")
+//                            .append("\t\t\t\t\t@Override\n")
+//                            .append("\t\t\t\t\tpublic void accept(").append(innerClass).append(" model) throws Exception {\n")
+//                            .append("\t\t\t\t\t\tSystem.out.println(model.getExampleField());\n")
+//                            .append("\t\t\t\t\t}\n")
+//                            .append("\t\t\t\t},\n")
+//                            .append("\t\t\t\tnew Consumer<Throwable>() {\n")
+//                            .append("\t\t\t\t\t@Override\n")
+//                            .append("\t\t\t\t\tpublic void accept(Throwable throwable) throws Exception {\n")
+//                            .append("\t\t\t\t\t}\n")
+//                            .append("\t\t\t\t}\n")
+//                            .append("\t\t\t);\n");
 
                     //End method definition
-                    builder.append("\t}");
+                    builder.append("\t}\n");
                 }
             }
 
@@ -148,6 +158,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
         StringBuilder clientsFile = new StringBuilder()
                 .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("import retrofit2.Retrofit;\n\n")
+                .append("import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n\n")
                 .append("public class Clients {\n");
 
         StringBuilder constructorDefinition = new StringBuilder();
@@ -158,11 +169,11 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             String baseClassName = str[1];
             clientsFile.append("\tpublic " + generatedClass + " " + baseClassName + ";\n");
 
-            constructorDefinition.append("\t\tthis." + baseClassName + " = new " + generatedClass + "(retrofitBuilder);\n");
+            constructorDefinition.append("\t\tthis." + baseClassName + " = new " + generatedClass + "(retrofitBuilder, bus);\n");
         }
 
         //Append the constructor declaration
-        clientsFile.append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder) {\n");
+        clientsFile.append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder, RxRetroBus bus) {\n");
 
         //Append the constructor definition
         clientsFile.append(constructorDefinition);
