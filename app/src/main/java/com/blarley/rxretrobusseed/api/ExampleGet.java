@@ -14,6 +14,6 @@ import retrofit2.http.GET;
 @GenerateEvents(baseUrl = "http://api.blarley.com/")
 public interface ExampleGet {
     @GET("example-get")
-    @Publish(eventName= "test")
+    @Publish(eventName= "test", cacheResult = true)
     Observable<ExampleGetModel> exampleGet();
 }

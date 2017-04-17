@@ -19,12 +19,12 @@ public class MainActivity extends AppCompatActivity {
     RetroSubscriber<ExampleGetModel> retroSubscriber = new RetroSubscriber<ExampleGetModel>("test") {
         @Override
         public void onLoading() {
-            Log.d("test", "loading");
+            findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onSuccess(ExampleGetModel response) {
-            Log.d("test", "YOLO");
+            findViewById(R.id.progressBar).setVisibility(View.GONE);
             Log.d("test", response.toString());
         }
 

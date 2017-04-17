@@ -104,35 +104,14 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                         innerClass += matcher.group(1);
                     }
 
+                    Publish annotation = method.getAnnotation(Publish.class); //TODO: Build a model for this and pass that into the method
+
                     builder.append("\t\tbus.addObservable(client." + methodName + "(")
                             .append(parameters)
                             .append("),")
-                            .append(innerClass + ".class")
-                            .append(", \"test\", false);\n");
-
-//                    //Begin body, this method should call the same method on the Retrofit client
-//                    builder.append("\t\tclient." + methodName + "(").append(parameters).append(")\n");
-//
-//                    //Subscribe on New thread, observe on the main thread, and subscribe!
-//                    builder.append("\t\t\t.subscribeOn(Schedulers.newThread())\n" +
-//                                    "\t\t\t.observeOn(AndroidSchedulers.mainThread())\n" +
-//                                    "\t\t\t.subscribe(\n");
-//
-//                    //Provide onNext and onError Consumers
-//                    //TODO: Figure out how the bus is going to work
-//                    //TODO: Go look at how Dagger generates classes, get rid of \t
-//                    builder.append("\t\t\t\tnew Consumer<").append(innerClass).append(">() {\n")
-//                            .append("\t\t\t\t\t@Override\n")
-//                            .append("\t\t\t\t\tpublic void accept(").append(innerClass).append(" model) throws Exception {\n")
-//                            .append("\t\t\t\t\t\tSystem.out.println(model.getExampleField());\n")
-//                            .append("\t\t\t\t\t}\n")
-//                            .append("\t\t\t\t},\n")
-//                            .append("\t\t\t\tnew Consumer<Throwable>() {\n")
-//                            .append("\t\t\t\t\t@Override\n")
-//                            .append("\t\t\t\t\tpublic void accept(Throwable throwable) throws Exception {\n")
-//                            .append("\t\t\t\t\t}\n")
-//                            .append("\t\t\t\t}\n")
-//                            .append("\t\t\t);\n");
+                            .append(innerClass + ".class, \"")
+                            .append(annotation.eventName() + "\", ")
+                            .append(annotation.cacheResult() + ");\n");
 
                     //End method definition
                     builder.append("\t}\n");

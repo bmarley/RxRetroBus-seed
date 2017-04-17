@@ -1,7 +1,5 @@
 package com.blarley.rxretrobusseed.library.bus;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,20 +22,20 @@ public class RxRetroBus {
     ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag =
             new ConcurrentHashMap<String, List<RetroSubscriber>>();
 
-    ConcurrentHashMap<String, CacheableResponse> cachedResultsByTag =
-            new ConcurrentHashMap<String, CacheableResponse>();
+    ConcurrentHashMap<String, CacheableRequest> cachedResultsByTag =
+            new ConcurrentHashMap<String, CacheableRequest>();
 
-    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag, boolean cacheResult) {
+    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag, final boolean cacheResult) {
 
         Consumer<T> onNext = new Consumer<T>() {
             @Override
-            public void accept(T t) throws Exception {
-                cachedResultsByTag.put(tag, new CacheableResponse<>(clazz, t));
-                Log.d("test", "WE HERE");
+            public void accept(T response) throws Exception {
+                if (cacheResult) {
+                    cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, response, null, false));
+                }
+
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    sub.onSuccess(t);
-                    sub.onLoading();
-                    sub.onError(new Throwable("yolo"));
+                    sub.onSuccess(response);
                 }
             }
         };
@@ -45,20 +43,54 @@ public class RxRetroBus {
         Consumer<Throwable> onError = new Consumer<Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
+                if (cacheResult) {
+                    cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, null, throwable, false));
+                }
 
+                for (RetroSubscriber sub : subscribersByTag.get(tag)) {
+                    sub.onError(throwable);
+                }
             }
         };
 
-        observable
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(onNext, onError);
+        if (!cacheResult || cachedResultsByTag.get(tag) == null || (cachedResultsByTag.get(tag) != null && !cachedResultsByTag.get(tag).isLoading())) { //TODO: This piggybacks off cache to limit requests should be separate argument
+
+            if (cacheResult) {
+                cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, null, null, true));
+            }
+
+            List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+
+            if (subscribers != null) {
+                for (RetroSubscriber sub : subscribersByTag.get(tag)) {
+                    sub.onLoading();
+                }
+            }
+
+            observable
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(onNext, onError);
+        }
     }
 
     public void register(Object object, List<RetroSubscriber> subscribers) {
         List<RetroSubscriber> unmodifiable = Collections.unmodifiableList(subscribers);
         registeredClasses.put(object,unmodifiable);
         addToSubscribersMap(unmodifiable);
+
+        for (RetroSubscriber sub : unmodifiable) {
+            CacheableRequest cachedResponse = cachedResultsByTag.get(sub.getTagName());
+            if (cachedResponse != null) {
+                if (cachedResponse.isError()) {
+                    sub.onError(cachedResponse.getError());
+                } else if (cachedResponse.isLoading()) {
+                    sub.onLoading();
+                } else {
+                    sub.onSuccess(cachedResponse.getSuccess());
+                }
+            }
+        }
     }
 
     public void unregister(Object object) {
