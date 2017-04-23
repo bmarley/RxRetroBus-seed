@@ -35,7 +35,15 @@ public class RxRetroBus {
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    sub.onSuccess(response);
+                    try {
+                        sub.getClass().getMethod("onSuccess", response.getClass());
+                        sub.onSuccess(response);
+                    } catch (NoSuchMethodException nsme) {
+                        throw new IllegalArgumentException("Subscriber to the tag \"" + tag
+                            + "\" provided an argument different from the tag's corresponding type"
+                            + " of " + response.getClass().toString() + "."
+                        );
+                    }
                 }
             }
         };
