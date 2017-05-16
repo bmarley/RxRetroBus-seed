@@ -35,15 +35,7 @@ public class RxRetroBus {
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    try {
-                        sub.getClass().getMethod("onSuccess", response.getClass());
-                        sub.onSuccess(response);
-                    } catch (NoSuchMethodException nsme) {
-                        throw new IllegalArgumentException("Subscriber to the tag \"" + tag
-                            + "\" provided an argument different from the tag's corresponding type"
-                            + " of " + response.getClass().toString() + "."
-                        );
-                    }
+                    postSuccess(sub, response, tag);
                 }
             }
         };
@@ -56,7 +48,7 @@ public class RxRetroBus {
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    sub.onError(throwable);
+                    postError(sub, throwable);
                 }
             }
         };
@@ -88,14 +80,15 @@ public class RxRetroBus {
         addToSubscribersMap(unmodifiable);
 
         for (RetroSubscriber sub : unmodifiable) {
+            String tag = sub.getTagName();
             CacheableRequest cachedResponse = cachedResultsByTag.get(sub.getTagName());
             if (cachedResponse != null) {
                 if (cachedResponse.isError()) {
-                    sub.onError(cachedResponse.getError());
+                    postError(sub, cachedResponse.getError());
                 } else if (cachedResponse.isLoading()) {
-                    sub.onLoading();
+                    postLoading(sub);
                 } else {
-                    sub.onSuccess(cachedResponse.getSuccess());
+                    postSuccess(sub, cachedResponse.getSuccess(), tag);
                 }
             }
         }
@@ -131,5 +124,25 @@ public class RxRetroBus {
 
             subscribersByTag.put(subscriber.getTagName(), Collections.unmodifiableList(updatedList));
         }
+    }
+
+    private <T> void postSuccess(RetroSubscriber sub, T response, String tag) {
+        try {
+            sub.getClass().getMethod("onSuccess", response.getClass());
+            sub.onSuccess(response);
+        } catch (NoSuchMethodException nsme) {
+            throw new IllegalArgumentException("Subscriber to the tag \"" + tag
+                    + "\" provided an argument different from the tag's corresponding type"
+                    + " of " + response.getClass().toString() + "."
+            );
+        }
+    }
+
+    private void postLoading(RetroSubscriber sub) {
+        sub.onLoading();
+    }
+
+    private void postError(RetroSubscriber sub, Throwable error) {
+        sub.onError(error);
     }
 }
