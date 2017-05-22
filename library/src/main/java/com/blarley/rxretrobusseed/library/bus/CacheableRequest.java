@@ -5,20 +5,14 @@ package com.blarley.rxretrobusseed.library.bus;
  */
 
 public class CacheableRequest<T> {
-    private final Class<T> type;
     private T success;
     private Throwable error;
     private Boolean loading;
 
-    public CacheableRequest(Class<T> type, T success, Throwable error, Boolean loading) {
-        this.type = type;
+    public CacheableRequest(T success, Throwable error, Boolean loading) {
         this.success = success;
         this.loading = loading;
         this.error = error;
-    }
-
-    public Class<T> getType() {
-        return type;
     }
 
     public T getSuccess() {

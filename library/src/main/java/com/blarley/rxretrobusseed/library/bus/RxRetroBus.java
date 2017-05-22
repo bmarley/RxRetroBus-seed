@@ -31,7 +31,7 @@ public class RxRetroBus {
             @Override
             public void accept(T response) throws Exception {
                 if (cacheResult) {
-                    cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, response, null, false));
+                    cachedResultsByTag.put(tag, new CacheableRequest<>(response, null, false));
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -44,7 +44,7 @@ public class RxRetroBus {
             @Override
             public void accept(Throwable throwable) throws Exception {
                 if (cacheResult) {
-                    cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, null, throwable, false));
+                    cachedResultsByTag.put(tag, new CacheableRequest<>(null, throwable, false));
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -56,7 +56,7 @@ public class RxRetroBus {
         if (!cacheResult || cachedResultsByTag.get(tag) == null || (cachedResultsByTag.get(tag) != null && !cachedResultsByTag.get(tag).isLoading())) { //TODO: This piggybacks off cache to limit requests should be separate argument
 
             if (cacheResult) {
-                cachedResultsByTag.put(tag, new CacheableRequest<>(clazz, null, null, true));
+                cachedResultsByTag.put(tag, new CacheableRequest<>(null, null, true));
             }
 
             List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
