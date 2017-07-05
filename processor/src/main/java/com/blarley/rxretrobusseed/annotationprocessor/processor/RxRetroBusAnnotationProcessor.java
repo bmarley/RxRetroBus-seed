@@ -81,17 +81,21 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                     builder.append("\tpublic void " + methodName + "(");
 
                     // Append parameters to method definition - TODO: Figure out how this can break
-                    String delim = " ";
-                    StringBuilder parameters = new StringBuilder();
+                    String delim = "";
+                    StringBuilder params = new StringBuilder();
+                    StringBuilder args = new StringBuilder();
                     for (VariableElement param : method.getParameters()) {
-                        parameters.append(delim)
+                        params.append(delim)
                                 .append(param.asType() + " ")
+                                .append(param.getSimpleName().toString());
+
+                        args.append(delim)
                                 .append(param.getSimpleName().toString());
                         delim = ", ";
                     }
 
                     //Append the parameters to the method definition and open declaration
-                    builder.append(parameters)
+                    builder.append(params)
                             .append(") {\n");
 
                     //Need to strip off the Observable and get parameterized class
@@ -107,7 +111,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                     Publish annotation = method.getAnnotation(Publish.class); //TODO: Build a model for this and pass that into the method
 
                     builder.append("\t\tbus.addObservable(client." + methodName + "(")
-                            .append(parameters)
+                            .append(args)
                             .append("),")
                             .append(innerClass + ".class, \"")
                             .append(annotation.eventName() + "\", ")
