@@ -1,9 +1,5 @@
 package com.blarley.rxretrobusseed.library.bus;
 
-/**
- * Created by Blake on 4/15/17.
- */
-
 public class Request<T> {
     private T success;
     private Throwable error;

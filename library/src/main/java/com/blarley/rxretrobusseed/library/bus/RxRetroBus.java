@@ -12,10 +12,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by Blake on 3/12/17.
- */
-
 public class RxRetroBus {
 
     ConcurrentHashMap<Object, List<RetroSubscriber>> registeredClasses = new ConcurrentHashMap<>();
@@ -65,7 +61,8 @@ public class RxRetroBus {
             }
         };
 
-        // If debounce is enabled and the call is request is still being made, do not make the call again
+        // If debounce is true and the request has not yet returned,
+        // do not make the call again, regardless of whether it is cacheable
         if (debounce && (resultsByTag.get(tag) != null && resultsByTag.get(tag).isLoading())) {
             return;
         }

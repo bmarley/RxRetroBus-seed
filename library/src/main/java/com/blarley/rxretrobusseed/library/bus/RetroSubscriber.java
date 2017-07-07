@@ -1,9 +1,5 @@
 package com.blarley.rxretrobusseed.library.bus;
 
-/**
- * Created by Blake on 4/14/17.
- */
-
 public abstract class RetroSubscriber<T> {
     private String tag;
 
