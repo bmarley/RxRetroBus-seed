@@ -36,8 +36,11 @@ public class RxRetroBus {
                     Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
                 }
 
-                for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    postSuccess(sub, response, tag);
+                List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+                if (subscribers != null) {
+                    for (RetroSubscriber subscriber : subscribers) {
+                        postSuccess(subscriber, response, tag);
+                    }
                 }
             }
         };
@@ -53,8 +56,11 @@ public class RxRetroBus {
                     Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
                 }
 
-                for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    postError(sub, throwable);
+                List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+                if (subscribers != null) {
+                    for (RetroSubscriber subscriber : subscribers) {
+                        postError(subscriber, throwable);
+                    }
                 }
             }
         };
