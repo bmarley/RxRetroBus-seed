@@ -16,16 +16,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RxRetroBus {
 
-    ConcurrentHashMap<Object, List<RetroSubscriber>> registeredClasses =
-            new ConcurrentHashMap<Object, List<RetroSubscriber>>();
+    ConcurrentHashMap<Object, List<RetroSubscriber>> registeredClasses = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, CacheableRequest> cachedResultsByTag = new ConcurrentHashMap<>();
 
-    ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag =
-            new ConcurrentHashMap<String, List<RetroSubscriber>>();
-
-    ConcurrentHashMap<String, CacheableRequest> cachedResultsByTag =
-            new ConcurrentHashMap<String, CacheableRequest>();
-
-    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag, final boolean cacheResult, final boolean debounce) {
+    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag,
+                                  final boolean cacheResult, final boolean debounce) {
 
         Consumer<T> onNext = new Consumer<T>() {
             @Override
@@ -71,8 +67,7 @@ public class RxRetroBus {
             }
         }
 
-        observable
-                .subscribeOn(Schedulers.io())
+        observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(onNext, onError);
     }
@@ -103,9 +98,9 @@ public class RxRetroBus {
     }
 
     private void addToSubscribersMap(List<RetroSubscriber> subscribers) {
-        for ( RetroSubscriber subscriber : subscribers) {
+        for (RetroSubscriber subscriber : subscribers) {
             List<RetroSubscriber> originalList = subscribersByTag.get(subscriber.getTagName());
-            List<RetroSubscriber> updatedList = new ArrayList<RetroSubscriber>();
+            List<RetroSubscriber> updatedList = new ArrayList<>();
 
             if (originalList != null) {
                 updatedList.addAll(originalList);
@@ -118,9 +113,9 @@ public class RxRetroBus {
     }
 
     private void removeFromSubscribersMap(List<RetroSubscriber> subscribers) {
-        for ( RetroSubscriber subscriber : subscribers) {
+        for (RetroSubscriber subscriber : subscribers) {
             List<RetroSubscriber> originalList = subscribersByTag.get(subscriber.getTagName());
-            List<RetroSubscriber> updatedList = new ArrayList<RetroSubscriber>();
+            List<RetroSubscriber> updatedList = new ArrayList<>();
 
             updatedList.addAll(originalList);
             updatedList.remove(subscriber);
