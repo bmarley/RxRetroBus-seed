@@ -22,7 +22,7 @@ public class Activity2 extends AppCompatActivity {
     private Button button2;
     private Button button3;
     private Button button4;
-    private Button backButton;
+    private Button destroyActivityButton;
 
     private TextView textView1;
     private TextView textView2;
@@ -124,7 +124,7 @@ public class Activity2 extends AppCompatActivity {
         button2 = (Button) findViewById(R.id.button2);
         button3 = (Button) findViewById(R.id.button3);
         button4 = (Button) findViewById(R.id.button4);
-        backButton = (Button) findViewById(R.id.back_button);
+        destroyActivityButton = (Button) findViewById(R.id.destroy_activity_button);
         textView1 = (TextView) findViewById(R.id.textView1);
         textView2 = (TextView) findViewById(R.id.textView2);
         textView3 = (TextView) findViewById(R.id.textView3);
@@ -162,7 +162,7 @@ public class Activity2 extends AppCompatActivity {
             }
         });
 
-        backButton.setOnClickListener(new View.OnClickListener() {
+        destroyActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();

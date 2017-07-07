@@ -178,6 +178,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         clientsFile.append("\t}\n")
                 .append("}");
 
+        // Write the file
         try {
             JavaFileObject source = processingEnv.getFiler()
                     .createSourceFile(

@@ -175,11 +175,11 @@
     </LinearLayout>
 
     <Button
-        android:layout_margin="16dp"
-        android:id="@+id/back_button"
-        android:layout_gravity="right"
+        android:id="@+id/destroy_activity_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_margin="16dp"
         android:text="Destroy Activity 💀"/>
 
 </LinearLayout>

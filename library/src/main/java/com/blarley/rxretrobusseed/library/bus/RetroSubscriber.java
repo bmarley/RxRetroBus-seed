@@ -5,14 +5,14 @@ package com.blarley.rxretrobusseed.library.bus;
  */
 
 public abstract class RetroSubscriber<T> {
-    private String tagName;
+    private String tag;
 
-    public RetroSubscriber(String tagName) {
-        this.tagName = tagName;
+    public RetroSubscriber(String tag) {
+        this.tag = tag;
     }
 
-    public String getTagName() {
-        return this.tagName;
+    public String getTag() {
+        return this.tag;
     }
 
     public abstract void onLoading();
