@@ -56,14 +56,13 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
 
             //Retrofit client impl
             builder.append("\tprivate " + baseType + " client;\n");
-
-            builder.append("\tprivate RxRetroBus bus;\n");
+            builder.append("\tprivate RxRetroBus bus;\n\n");
 
             //Constructor - builds Retrofit client
             builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
                             "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
-                            "\t\t.build()\n" +
-                            "\t\t.create(" + baseType + ".class);\n" +
+                            "\t\t\t\t.build()\n" +
+                            "\t\t\t\t.create(" + baseType + ".class);\n" +
                             "\t\tthis.bus = bus;\n" +
                             "\t}\n\n");
 
@@ -112,13 +111,13 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
 
                     builder.append("\t\tbus.addObservable(client." + methodName + "(")
                             .append(args)
-                            .append("),")
+                            .append("), ")
                             .append(innerClass + ".class, \"")
                             .append(annotation.eventName() + "\", ")
                             .append(annotation.cacheResult() + ");\n");
 
                     //End method definition
-                    builder.append("\t}\n");
+                    builder.append("\t}\n\n");
                 }
             }
 
