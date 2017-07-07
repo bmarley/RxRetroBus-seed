@@ -25,13 +25,15 @@ public class RxRetroBus {
     ConcurrentHashMap<String, CacheableRequest> cachedResultsByTag =
             new ConcurrentHashMap<String, CacheableRequest>();
 
-    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag, final boolean cacheResult) {
+    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag, final boolean cacheResult, final boolean debounce) {
 
         Consumer<T> onNext = new Consumer<T>() {
             @Override
             public void accept(T response) throws Exception {
                 if (cacheResult) {
                     cachedResultsByTag.put(tag, new CacheableRequest<>(response, null, false));
+                } else {
+                    cachedResultsByTag.remove(tag);
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -45,6 +47,8 @@ public class RxRetroBus {
             public void accept(Throwable throwable) throws Exception {
                 if (cacheResult) {
                     cachedResultsByTag.put(tag, new CacheableRequest<>(null, throwable, false));
+                } else {
+                    cachedResultsByTag.remove(tag);
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -53,25 +57,24 @@ public class RxRetroBus {
             }
         };
 
-        if (!cacheResult || cachedResultsByTag.get(tag) == null || (cachedResultsByTag.get(tag) != null && !cachedResultsByTag.get(tag).isLoading())) { //TODO: This piggybacks off cache to limit requests should be separate argument
-
-            if (cacheResult) {
-                cachedResultsByTag.put(tag, new CacheableRequest<>(null, null, true));
-            }
-
-            List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
-
-            if (subscribers != null) {
-                for (RetroSubscriber sub : subscribersByTag.get(tag)) {
-                    sub.onLoading();
-                }
-            }
-
-            observable
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(onNext, onError);
+        // If debounce is enabled and the call is request is still being made, do not make the call again
+        if (debounce && (cachedResultsByTag.get(tag) != null && cachedResultsByTag.get(tag).isLoading())) {
+            return;
         }
+
+        cachedResultsByTag.put(tag, new CacheableRequest<>(null, null, true));
+
+        List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+        if (subscribers != null) {
+            for (RetroSubscriber sub : subscribersByTag.get(tag)) {
+                sub.onLoading();
+            }
+        }
+
+        observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(onNext, onError);
     }
 
     public void register(Object object, List<RetroSubscriber> subscribers) {

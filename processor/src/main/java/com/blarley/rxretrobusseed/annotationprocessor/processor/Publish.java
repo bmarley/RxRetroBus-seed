@@ -11,4 +11,5 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Publish {
     String eventName();
     boolean cacheResult() default false;
+    boolean debounce() default false;
 }
