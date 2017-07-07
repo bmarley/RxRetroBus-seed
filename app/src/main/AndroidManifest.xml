@@ -11,13 +11,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name="com.blarley.rxretrobusseed.App">
-        <activity android:name="com.blarley.rxretrobusseed.activities.Activity2">
+        <activity android:name="com.blarley.rxretrobusseed.activities.Activity1">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="com.blarley.rxretrobusseed.activities.Activity2" />
     </application>
 
 </manifest>
