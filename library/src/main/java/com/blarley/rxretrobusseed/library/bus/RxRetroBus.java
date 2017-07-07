@@ -1,5 +1,7 @@
 package com.blarley.rxretrobusseed.library.bus;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,8 +30,10 @@ public class RxRetroBus {
             public void accept(T response) throws Exception {
                 if (cacheResult) {
                     cachedResultsByTag.put(tag, new CacheableRequest<>(response, null, false));
+                    Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
                 } else {
                     cachedResultsByTag.remove(tag);
+                    Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -43,8 +47,10 @@ public class RxRetroBus {
             public void accept(Throwable throwable) throws Exception {
                 if (cacheResult) {
                     cachedResultsByTag.put(tag, new CacheableRequest<>(null, throwable, false));
+                    Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
                 } else {
                     cachedResultsByTag.remove(tag);
+                    Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
                 }
 
                 for (RetroSubscriber sub : subscribersByTag.get(tag)) {
@@ -59,6 +65,7 @@ public class RxRetroBus {
         }
 
         cachedResultsByTag.put(tag, new CacheableRequest<>(null, null, true));
+        Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
 
         List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
         if (subscribers != null) {
@@ -75,6 +82,7 @@ public class RxRetroBus {
     public void register(Object object, List<RetroSubscriber> subscribers) {
         List<RetroSubscriber> unmodifiable = Collections.unmodifiableList(subscribers);
         registeredClasses.put(object,unmodifiable);
+        Log.d("RxRetroBus", "Adding " + object.toString() + " to registeredClasses");
         addToSubscribersMap(unmodifiable);
 
         for (RetroSubscriber sub : unmodifiable) {
@@ -95,6 +103,7 @@ public class RxRetroBus {
     public void unregister(Object object) {
         removeFromSubscribersMap(registeredClasses.get(object));
         registeredClasses.remove(object);
+        Log.d("RxRetroBus", "Removing " + object.toString() + " from registeredClasses");
     }
 
     private void addToSubscribersMap(List<RetroSubscriber> subscribers) {
@@ -109,6 +118,7 @@ public class RxRetroBus {
             updatedList.add(subscriber);
 
             subscribersByTag.put(subscriber.getTagName(), Collections.unmodifiableList(updatedList));
+            Log.d("RxRetroBus", "Adding " + subscriber.getTagName() + " to subscribersByTag");
         }
     }
 
@@ -121,6 +131,7 @@ public class RxRetroBus {
             updatedList.remove(subscriber);
 
             subscribersByTag.put(subscriber.getTagName(), Collections.unmodifiableList(updatedList));
+            Log.d("RxRetroBus", "Removing " + subscriber.getTagName() + " from subscribersByTag");
         }
     }
 
