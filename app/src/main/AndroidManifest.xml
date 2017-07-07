@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name="com.blarley.rxretrobusseed.App">
-        <activity android:name="com.blarley.rxretrobusseed.activities.MainActivity">
+        <activity android:name="com.blarley.rxretrobusseed.activities.Activity2">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
