@@ -71,7 +71,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             for (Element subElement : roundEnv.getElementsAnnotatedWith(Publish.class)) {
 
                 // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
-                if (subElement instanceof ExecutableElement) {
+                if (subElement instanceof ExecutableElement && subElement.getEnclosingElement() == element) {
 
                     //Cast to ExecutableElement in order to get Parameters
                     ExecutableElement method = (ExecutableElement) subElement;
