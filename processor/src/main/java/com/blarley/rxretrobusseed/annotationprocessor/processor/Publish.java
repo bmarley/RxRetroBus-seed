@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface Publish {
-    String eventName();
-    boolean cacheResult() default false;
+    String tag();
+    boolean cache() default false;
     boolean debounce() default false;
 }

@@ -113,8 +113,8 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                             .append(args)
                             .append("), ")
                             .append(innerClass + ".class, \"")
-                            .append(annotation.eventName() + "\", ")
-                            .append(annotation.cacheResult() + ", ")
+                            .append(annotation.tag() + "\", ")
+                            .append(annotation.cache() + ", ")
                             .append(annotation.debounce() + ");\n");
 
                     // End method definition
