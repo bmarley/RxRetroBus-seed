@@ -4,12 +4,12 @@ package com.blarley.rxretrobusseed.library.bus;
  * Created by Blake on 4/15/17.
  */
 
-public class CacheableRequest<T> {
+public class Request<T> {
     private T success;
     private Throwable error;
     private Boolean loading;
 
-    public CacheableRequest(T success, Throwable error, Boolean loading) {
+    public Request(T success, Throwable error, Boolean loading) {
         this.success = success;
         this.loading = loading;
         this.error = error;

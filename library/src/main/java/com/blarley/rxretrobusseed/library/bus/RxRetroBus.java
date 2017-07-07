@@ -20,7 +20,7 @@ public class RxRetroBus {
 
     ConcurrentHashMap<Object, List<RetroSubscriber>> registeredClasses = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, CacheableRequest> cachedResultsByTag = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, Request> resultsByTag = new ConcurrentHashMap<>();
 
     public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag,
                                   final boolean cacheResult, final boolean debounce) {
@@ -29,11 +29,11 @@ public class RxRetroBus {
             @Override
             public void accept(T response) throws Exception {
                 if (cacheResult) {
-                    cachedResultsByTag.put(tag, new CacheableRequest<>(response, null, false));
-                    Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
+                    resultsByTag.put(tag, new Request<>(response, null, false));
+                    Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
                 } else {
-                    cachedResultsByTag.remove(tag);
-                    Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
+                    resultsByTag.remove(tag);
+                    Log.d("RxRetroBus", "Removing " + tag + " from resultsByTag");
                 }
 
                 List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
@@ -49,11 +49,11 @@ public class RxRetroBus {
             @Override
             public void accept(Throwable throwable) throws Exception {
                 if (cacheResult) {
-                    cachedResultsByTag.put(tag, new CacheableRequest<>(null, throwable, false));
-                    Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
+                    resultsByTag.put(tag, new Request<>(null, throwable, false));
+                    Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
                 } else {
-                    cachedResultsByTag.remove(tag);
-                    Log.d("RxRetroBus", "Removing " + tag + " from cachedResultsByTag");
+                    resultsByTag.remove(tag);
+                    Log.d("RxRetroBus", "Removing " + tag + " from resultsByTag");
                 }
 
                 List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
@@ -66,12 +66,12 @@ public class RxRetroBus {
         };
 
         // If debounce is enabled and the call is request is still being made, do not make the call again
-        if (debounce && (cachedResultsByTag.get(tag) != null && cachedResultsByTag.get(tag).isLoading())) {
+        if (debounce && (resultsByTag.get(tag) != null && resultsByTag.get(tag).isLoading())) {
             return;
         }
 
-        cachedResultsByTag.put(tag, new CacheableRequest<>(null, null, true));
-        Log.d("RxRetroBus", "Adding " + tag + " to cachedResultsByTag");
+        resultsByTag.put(tag, new Request<>(null, null, true));
+        Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
 
         List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
         if (subscribers != null) {
@@ -93,7 +93,7 @@ public class RxRetroBus {
 
         for (RetroSubscriber subscriber : unmodifiable) {
             String tag = subscriber.getTag();
-            CacheableRequest cachedResponse = cachedResultsByTag.get(subscriber.getTag());
+            Request cachedResponse = resultsByTag.get(subscriber.getTag());
             if (cachedResponse != null) {
                 if (cachedResponse.isError()) {
                     postError(subscriber, cachedResponse.getError());
