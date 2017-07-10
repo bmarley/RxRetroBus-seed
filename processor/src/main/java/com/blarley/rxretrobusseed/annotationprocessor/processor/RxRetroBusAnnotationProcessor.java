@@ -46,9 +46,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             StringBuilder builder = new StringBuilder()
                 .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("import retrofit2.Retrofit;\n" +
-                        "import io.reactivex.android.schedulers.AndroidSchedulers;\n" +
-                        "import io.reactivex.functions.Consumer;\n" +
-                        "import io.reactivex.schedulers.Schedulers;\n" +
+                        "import com.blarley.rxretrobusseed.library.bus.Publish;\n" +
                         "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
 
             // Begin class definition
@@ -112,10 +110,11 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                     builder.append("\t\tbus.addObservable(client." + methodName + "(")
                             .append(args)
                             .append("), ")
-                            .append(innerClass + ".class, \"")
-                            .append(annotation.tag() + "\", ")
+                            .append(innerClass + ".class, ")
+                            .append("new Publish(")
+                            .append("\"" + annotation.tag() + "\", ")
                             .append(annotation.cache() + ", ")
-                            .append(annotation.debounce() + ");\n");
+                            .append(annotation.debounce() + "));\n");
 
                     // End method definition
                     builder.append("\t}\n\n");
