@@ -14,7 +14,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RxRetroBus {
 
-    ConcurrentHashMap<Object, List<RetroSubscriber>> registeredClasses = new ConcurrentHashMap<>();
+    ConcurrentHashMap<RetroSubscriberReceiver, List<RetroSubscriber>> registeredClasses = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, Request> resultsByTag = new ConcurrentHashMap<>();
 
@@ -82,10 +82,10 @@ public class RxRetroBus {
                 .subscribe(onNext, onError);
     }
 
-    public void register(Object object, List<RetroSubscriber> subscribers) {
-        List<RetroSubscriber> unmodifiable = Collections.unmodifiableList(subscribers);
-        registeredClasses.put(object,unmodifiable);
-        Log.d("RxRetroBus", "Adding " + object.toString() + " to registeredClasses");
+    public void register(RetroSubscriberReceiver receiver) {
+        List<RetroSubscriber> unmodifiable = Collections.unmodifiableList(receiver.getSubscribers());
+        registeredClasses.put(receiver, unmodifiable);
+        Log.d("RxRetroBus", "Adding " + receiver.toString() + " to registeredClasses");
         addToSubscribersMap(unmodifiable);
 
         for (RetroSubscriber subscriber : unmodifiable) {
@@ -103,10 +103,10 @@ public class RxRetroBus {
         }
     }
 
-    public void unregister(Object object) {
-        removeFromSubscribersMap(registeredClasses.get(object));
-        registeredClasses.remove(object);
-        Log.d("RxRetroBus", "Removing " + object.toString() + " from registeredClasses");
+    public void unregister(RetroSubscriberReceiver receiver) {
+        removeFromSubscribersMap(registeredClasses.get(receiver));
+        registeredClasses.remove(receiver);
+        Log.d("RxRetroBus", "Removing " + receiver.toString() + " from registeredClasses");
     }
 
     private void addToSubscribersMap(List<RetroSubscriber> subscribers) {
