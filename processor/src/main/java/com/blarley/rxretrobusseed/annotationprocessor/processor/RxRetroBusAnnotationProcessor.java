@@ -22,7 +22,7 @@ import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes("com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
+public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -37,12 +37,12 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             String baseClassName = element.getSimpleName().toString();
             String generatedClassName = generatedPrefix + baseClassName;
 
-            //Add generated Class to create Clients file
+            // Add generated Class to create Clients file
             generatedClasses.add(generatedClassName);
 
             String baseUrl = element.getAnnotation(GenerateEvents.class).baseUrl();
 
-            //Package and imports
+            // Package and imports
             StringBuilder builder = new StringBuilder()
                 .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("import retrofit2.Retrofit;\n" +
@@ -51,29 +51,28 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                         "import io.reactivex.schedulers.Schedulers;\n" +
                         "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
 
-            //Begin class definition
+            // Begin class definition
             builder.append("public class " + generatedClassName + " {\n\n");
 
-            //Retrofit client impl
+            // Retrofit client impl
             builder.append("\tprivate " + baseType + " client;\n");
+            builder.append("\tprivate RxRetroBus bus;\n\n");
 
-            builder.append("\tprivate RxRetroBus bus;\n");
-
-            //Constructor - builds Retrofit client
+            // Constructor - builds Retrofit client
             builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
                             "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
-                            "\t\t.build()\n" +
-                            "\t\t.create(" + baseType + ".class);\n" +
+                            "\t\t\t\t.build()\n" +
+                            "\t\t\t\t.create(" + baseType + ".class);\n" +
                             "\t\tthis.bus = bus;\n" +
                             "\t}\n\n");
 
-            //Get Annotated methods within the class - the builds the method used to make calls
+            // Get Annotated methods within the class - the builds the method used to make calls
             for (Element subElement : element.getEnclosedElements()) {
 
                 // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
                 if (subElement instanceof ExecutableElement && subElement.getAnnotation(Publish.class) != null) {
 
-                    //Cast to ExecutableElement in order to get Parameters
+                    // Cast to ExecutableElement in order to get Parameters
                     ExecutableElement method = (ExecutableElement) subElement;
                     String methodName = method.getSimpleName().toString();
 
@@ -94,12 +93,12 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                         delim = ", ";
                     }
 
-                    //Append the parameters to the method definition and open declaration
+                    // Append the parameters to the method definition and open declaration
                     builder.append(params)
                             .append(") {\n");
 
-                    //Need to strip off the Observable and get parameterized class
-                    //TODO: Is this a better way to do this?
+                    // Need to strip off the Observable and get parameterized class
+                    // TODO: Is this a better way to do this?
                     String observable = method.getReturnType().toString();
                     Pattern regex = Pattern.compile("<(.*?)>");
                     Matcher matcher = regex.matcher(observable);
@@ -108,26 +107,30 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                         innerClass += matcher.group(1);
                     }
 
-                    Publish annotation = method.getAnnotation(Publish.class); //TODO: Build a model for this and pass that into the method
+                    Publish annotation = method.getAnnotation(Publish.class); // TODO: Build a model for this and pass that into the method
 
                     builder.append("\t\tbus.addObservable(client." + methodName + "(")
                             .append(args)
-                            .append("),")
+                            .append("), ")
                             .append(innerClass + ".class, \"")
-                            .append(annotation.eventName() + "\", ")
-                            .append(annotation.cacheResult() + ");\n");
+                            .append(annotation.tag() + "\", ")
+                            .append(annotation.cache() + ", ")
+                            .append(annotation.debounce() + ");\n");
 
-                    //End method definition
-                    builder.append("\t}\n");
+                    // End method definition
+                    builder.append("\t}\n\n");
                 }
             }
 
-            //End Class definition
+            // End Class definition
             builder.append("}\n");
 
-            //Write the file
+            // Write the file
             try {
-                JavaFileObject source = processingEnv.getFiler().createSourceFile("com.blarley.rxretrobusseed.annotationprocessor.generated." + generatedClassName);
+                JavaFileObject source = processingEnv.getFiler()
+                        .createSourceFile(
+                                "com.blarley.rxretrobusseed.annotationprocessor.generated."
+                                        + generatedClassName);
 
                 Writer writer = source.openWriter();
                 writer.write(builder.toString());
@@ -137,7 +140,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
             }
         }
 
-        //Clients String builder
+        // Clients String builder
         StringBuilder clientsFile = new StringBuilder()
                 .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("import retrofit2.Retrofit;\n\n")
@@ -146,28 +149,40 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
 
         StringBuilder constructorDefinition = new StringBuilder();
 
-        //Append the instance fields
-        for(String generatedClass: generatedClasses) {
+        // Append the instance fields
+        for (String generatedClass: generatedClasses) {
             String[] str = generatedClass.split("_");
             String baseClassName = str[1];
-            clientsFile.append("\tpublic " + generatedClass + " " + baseClassName + ";\n");
+            clientsFile.append(
+                    "\tpublic "
+                            + generatedClass
+                            + " "
+                            + baseClassName
+                            + ";\n");
 
-            constructorDefinition.append("\t\tthis." + baseClassName + " = new " + generatedClass + "(retrofitBuilder, bus);\n");
+            constructorDefinition.append(
+                    "\t\tthis."
+                            + baseClassName
+                            + " = new "
+                            + generatedClass
+                            + "(retrofitBuilder, bus);\n");
         }
 
-        //Append the constructor declaration
+        // Append the constructor declaration
         clientsFile.append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder, RxRetroBus bus) {\n");
 
-        //Append the constructor definition
+        // Append the constructor definition
         clientsFile.append(constructorDefinition);
 
-        //Close the constructor and class
+        // Close the constructor and class
         clientsFile.append("\t}\n")
-                    .append("}");
+                .append("}");
 
+        // Write the file
         try {
-            JavaFileObject source = processingEnv.getFiler().createSourceFile("com.blarley.rxretrobusseed.annotationprocessor.generated.Clients");
-
+            JavaFileObject source = processingEnv.getFiler()
+                    .createSourceFile(
+                            "com.blarley.rxretrobusseed.annotationprocessor.generated.Clients");
             Writer writer = source.openWriter();
             writer.write(clientsFile.toString());
             writer.flush();
