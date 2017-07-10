@@ -68,10 +68,10 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor{
                             "\t}\n\n");
 
             //Get Annotated methods within the class - the builds the method used to make calls
-            for (Element subElement : roundEnv.getElementsAnnotatedWith(Publish.class)) {
+            for (Element subElement : element.getEnclosedElements()) {
 
                 // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
-                if (subElement instanceof ExecutableElement && subElement.getEnclosingElement() == element) {
+                if (subElement instanceof ExecutableElement && subElement.getAnnotation(Publish.class) != null) {
 
                     //Cast to ExecutableElement in order to get Parameters
                     ExecutableElement method = (ExecutableElement) subElement;
