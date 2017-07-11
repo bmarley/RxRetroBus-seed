@@ -114,7 +114,8 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                             .append("new Publish(")
                             .append("\"" + annotation.tag() + "\", ")
                             .append(annotation.cache() + ", ")
-                            .append(annotation.debounce() + "));\n");
+                            .append(annotation.debounce() + ", ")
+                            .append(annotation.sticky() + "));\n");
 
                     // End method definition
                     builder.append("\t}\n\n");

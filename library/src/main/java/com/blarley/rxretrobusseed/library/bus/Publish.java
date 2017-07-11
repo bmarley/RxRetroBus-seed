@@ -5,14 +5,16 @@ package com.blarley.rxretrobusseed.library.bus;
  */
 
 public class Publish {
-    String tag;
-    boolean cached;
-    boolean debounced;
+    private String tag;
+    private boolean cached;
+    private boolean debounced;
+    private boolean sticky;
 
-    public Publish(String tag, boolean cached, boolean debounced) {
+    public Publish(String tag, boolean cached, boolean debounced, boolean sticky) {
         this.tag = tag;
         this.cached = cached;
         this.debounced = debounced;
+        this.sticky = sticky;
     }
 
 
@@ -28,5 +30,10 @@ public class Publish {
 
     public boolean isDebounced() {
         return debounced;
+    }
+
+
+    public boolean isSticky() {
+        return sticky;
     }
 }

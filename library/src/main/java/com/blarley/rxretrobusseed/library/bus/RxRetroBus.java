@@ -23,8 +23,8 @@ public class RxRetroBus {
         Consumer<T> onNext = new Consumer<T>() {
             @Override
             public void accept(T response) throws Exception {
-                if (request.isCached()) {
-                    resultsByTag.put(request.getTag(), new Request<>(response, null, false));
+                if (request.isCached() || request.isSticky()) {
+                    resultsByTag.put(request.getTag(), new Request<>(response, null, false, request.isSticky()));
                     Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
                 } else {
                     resultsByTag.remove(request.getTag());
@@ -43,8 +43,8 @@ public class RxRetroBus {
         Consumer<Throwable> onError = new Consumer<Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
-                if (request.isCached()) {
-                    resultsByTag.put(request.getTag(), new Request<>(null, throwable, false));
+                if (request.isCached() || request.isSticky()) {
+                    resultsByTag.put(request.getTag(), new Request<>(null, throwable, false, request.isSticky()));
                     Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
                 } else {
                     resultsByTag.remove(request.getTag());
@@ -66,7 +66,7 @@ public class RxRetroBus {
             return;
         }
 
-        resultsByTag.put(request.getTag(), new Request<>(null, null, true));
+        resultsByTag.put(request.getTag(), new Request<>(null, null, true, request.isSticky()));
         Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
 
         List<RetroSubscriber> subscribers = subscribersByTag.get(request.getTag());
@@ -91,12 +91,18 @@ public class RxRetroBus {
             String tag = subscriber.getTag();
             Request cachedResponse = resultsByTag.get(subscriber.getTag());
             if (cachedResponse != null) {
-                if (cachedResponse.isError()) {
-                    postError(subscriber, cachedResponse.getError());
-                } else if (cachedResponse.isLoading()) {
+                if (cachedResponse.isLoading()) {
                     postLoading(subscriber);
                 } else {
-                    postSuccess(subscriber, cachedResponse.getSuccess(), tag);
+                    if (cachedResponse.isError()) {
+                        postError(subscriber, cachedResponse.getError());
+                    } else {
+                        postSuccess(subscriber, cachedResponse.getSuccess(), tag);
+                    }
+
+                    if (cachedResponse.isSticky()) {
+                        resultsByTag.remove(tag);
+                    }
                 }
             }
         }
