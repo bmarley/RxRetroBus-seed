@@ -27,20 +27,22 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        List<String> generatedClasses = new ArrayList<>();
+        List<GeneratedClass> generatedClasses = new ArrayList<>();
         String generatedPrefix = "RxRetroBus_";
 
         // Get the Retrofit interfaces annotated with GenerateEvents
         for (Element element : roundEnv.getElementsAnnotatedWith(GenerateEvents.class)) {
+
+            GenerateEvents generateEvents = element.getAnnotation(GenerateEvents.class);
 
             String baseType = element.asType().toString();
             String baseClassName = element.getSimpleName().toString();
             String generatedClassName = generatedPrefix + baseClassName;
 
             // Add generated Class to create Clients file
-            generatedClasses.add(generatedClassName);
+            generatedClasses.add(new GeneratedClass(generatedClassName, generateEvents.retrofit()));
 
-            String baseUrl = element.getAnnotation(GenerateEvents.class).baseUrl();
+            String baseUrl = generateEvents.baseUrl();
 
             // Package and imports
             StringBuilder builder = new StringBuilder()
@@ -56,13 +58,18 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             builder.append("\tprivate " + baseType + " client;\n");
             builder.append("\tprivate RxRetroBus bus;\n\n");
 
-            // Constructor - builds Retrofit client
-            builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
-                            "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
-                            "\t\t\t\t.build()\n" +
-                            "\t\t\t\t.create(" + baseType + ".class);\n" +
-                            "\t\tthis.bus = bus;\n" +
-                            "\t}\n\n");
+            if (generateEvents.retrofit()) {
+                // Constructor - builds Retrofit client
+                builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
+                        "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
+                        "\t\t\t\t.build()\n" +
+                        "\t\t\t\t.create(" + baseType + ".class);\n");
+            } else {
+                builder.append("\tpublic " + generatedClassName + "(RxRetroBus bus) { \n" +
+                        "\t\tthis.client = new " + baseType + "();\n");
+            }
+
+            builder.append("\t\tthis.bus = bus;\n\t}\n\n");
 
             // Get Annotated methods within the class - the builds the method used to make calls
             for (Element subElement : element.getEnclosedElements()) {
@@ -150,22 +157,22 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         StringBuilder constructorDefinition = new StringBuilder();
 
         // Append the instance fields
-        for (String generatedClass: generatedClasses) {
-            String[] str = generatedClass.split("_");
+        for (GeneratedClass generatedClass : generatedClasses) {
+            String[] str = generatedClass.getName().split("_");
             String baseClassName = str[1];
-            clientsFile.append(
-                    "\tpublic "
-                            + generatedClass
-                            + " "
-                            + baseClassName
-                            + ";\n");
+            clientsFile.append("\tpublic ")
+                    .append(generatedClass.getName())
+                    .append(" ")
+                    .append(baseClassName)
+                    .append(";\n");
 
-            constructorDefinition.append(
-                    "\t\tthis."
-                            + baseClassName
-                            + " = new "
-                            + generatedClass
-                            + "(retrofitBuilder, bus);\n");
+            constructorDefinition.append("\t\tthis.")
+                    .append(baseClassName)
+                    .append(" = new ")
+                    .append(generatedClass.getName())
+                    .append(generatedClass.isRetrofitEnabled()
+                            ? "(retrofitBuilder, bus);\n"
+                            : "(bus);\n");
         }
 
         // Append the constructor declaration
@@ -191,5 +198,26 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+
+    class GeneratedClass {
+        private String name;
+        private Boolean retrofitEnabled;
+
+        public GeneratedClass(String name, Boolean retrofitEnabled) {
+            this.name = name;
+            this.retrofitEnabled = retrofitEnabled;
+        }
+
+
+        public String getName() {
+            return name;
+        }
+
+
+        public Boolean isRetrofitEnabled() {
+            return retrofitEnabled;
+        }
     }
 }
