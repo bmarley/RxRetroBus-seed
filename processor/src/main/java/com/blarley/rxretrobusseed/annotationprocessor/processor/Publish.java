@@ -8,4 +8,5 @@ public @interface Publish {
     String tag();
     boolean cache() default false;
     boolean debounce() default false;
+    boolean sticky() default false;
 }

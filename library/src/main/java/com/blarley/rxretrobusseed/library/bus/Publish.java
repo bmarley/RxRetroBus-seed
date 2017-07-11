@@ -8,11 +8,13 @@ public class Publish {
     String tag;
     boolean cached;
     boolean debounced;
+    boolean sticky;
 
-    public Publish(String tag, boolean cached, boolean debounced) {
+    public Publish(String tag, boolean cached, boolean debounced, boolean sticky) {
         this.tag = tag;
         this.cached = cached;
         this.debounced = debounced;
+        this.sticky = sticky;
     }
 
 
@@ -28,5 +30,10 @@ public class Publish {
 
     public boolean isDebounced() {
         return debounced;
+    }
+
+
+    public boolean isSticky() {
+        return sticky;
     }
 }
