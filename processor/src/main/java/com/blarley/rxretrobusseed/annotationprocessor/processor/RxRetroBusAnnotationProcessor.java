@@ -164,7 +164,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             String baseClassName = str[1];
             clientsFile.append(
                     "\tpublic "
-                            + generatedClass
+                            + generatedClass.getName()
                             + " "
                             + baseClassName
                             + ";\n");
@@ -174,14 +174,14 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                         "\t\tthis."
                                 + baseClassName
                                 + " = new "
-                                + generatedClass
+                                + generatedClass.getName()
                                 + "(retrofitBuilder, bus);\n");
             } else {
                 constructorDefinition.append(
                         "\t\tthis."
                                 + baseClassName
                                 + " = new "
-                                + generatedClass
+                                + generatedClass.getName()
                                 + "(bus);\n");
             }
         }
