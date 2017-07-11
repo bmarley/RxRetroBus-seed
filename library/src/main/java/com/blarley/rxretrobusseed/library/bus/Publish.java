@@ -4,7 +4,7 @@ package com.blarley.rxretrobusseed.library.bus;
  * Created by esu on 7/10/17.
  */
 
-public class Publish {
+abstract public class Publish {
     private String tag;
     private boolean cached;
     private boolean debounced;

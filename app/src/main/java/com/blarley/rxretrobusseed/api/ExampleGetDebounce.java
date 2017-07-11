@@ -1,7 +1,8 @@
 package com.blarley.rxretrobusseed.api;
 
+import com.blarley.rxretrobusseed.annotationprocessor.processor.CachedEvent;
 import com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents;
-import com.blarley.rxretrobusseed.annotationprocessor.processor.Publish;
+import com.blarley.rxretrobusseed.annotationprocessor.processor.UncachedEvent;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 
 import io.reactivex.Observable;
@@ -15,10 +16,10 @@ import retrofit2.http.Path;
 @GenerateEvents(baseUrl = "http://api.blarley.com/")
 public interface ExampleGetDebounce {
     @GET("example-get")
-    @Publish(tag = "getUncachedRequestDebounce", debounce = true)
+    @UncachedEvent(tag = "getUncachedRequestDebounce", debounce = true, sticky = true)
     Observable<ExampleGetModel> getUncachedRequest();
 
     @GET("{s}")
-    @Publish(tag = "getCachedRequestDebounce", cache = true, debounce = true)
+    @CachedEvent(tag = "getCachedRequestDebounce", debounce = true)
     Observable<ExampleGetModel> getCachedRequest(@Path("s") String s);
 }
