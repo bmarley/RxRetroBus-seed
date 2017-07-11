@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.blarley.rxretrobusseed.App;
 import com.blarley.rxretrobusseed.library.bus.RetroSubscriber;
@@ -34,6 +35,27 @@ public class Activity2 extends AppCompatActivity implements RetroSubscriberRecei
     private ProgressBar progressBar2;
     private ProgressBar progressBar3;
     private ProgressBar progressBar4;
+
+
+
+    RetroSubscriber<ExampleGetModel> setUpBomb = new RetroSubscriber<ExampleGetModel>("setUpBomb") {
+        @Override
+        public void onLoading() {
+
+        }
+
+
+        @Override
+        public void onSuccess(ExampleGetModel response) {
+            Toast.makeText(Activity2.this, "BOOM", Toast.LENGTH_SHORT).show();
+        }
+
+
+        @Override
+        public void onError(Throwable throwable) {
+            Toast.makeText(Activity2.this, "Something went wrong with the bomb...", Toast.LENGTH_SHORT).show();
+        }
+    };
 
 
     RetroSubscriber<ExampleGetModel> uncachedRequest = new RetroSubscriber<ExampleGetModel>("getUncachedRequest") {
@@ -191,6 +213,7 @@ public class Activity2 extends AppCompatActivity implements RetroSubscriberRecei
         subs.add(uncachedRequest);
         subs.add(uncachedRequestDebounced);
         subs.add(cachedRequestDebounced);
+        subs.add(setUpBomb);
         return subs;
     }
 }
