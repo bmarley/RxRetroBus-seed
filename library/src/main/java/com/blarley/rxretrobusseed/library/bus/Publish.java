@@ -5,10 +5,10 @@ package com.blarley.rxretrobusseed.library.bus;
  */
 
 public class Publish {
-    String tag;
-    boolean cached;
-    boolean debounced;
-    boolean sticky;
+    private String tag;
+    private boolean cached;
+    private boolean debounced;
+    private boolean sticky;
 
     public Publish(String tag, boolean cached, boolean debounced, boolean sticky) {
         this.tag = tag;
