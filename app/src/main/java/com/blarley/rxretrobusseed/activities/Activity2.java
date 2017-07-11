@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.blarley.rxretrobusseed.App;
 import com.blarley.rxretrobusseed.library.bus.RetroSubscriber;
+import com.blarley.rxretrobusseed.library.bus.RetroSubscriberReceiver;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.List;
 
 import blake.rxretrobusseed.R;
 
-public class Activity2 extends AppCompatActivity {
+public class Activity2 extends AppCompatActivity implements RetroSubscriberReceiver {
 
     private Button button1;
     private Button button2;
@@ -180,11 +181,16 @@ public class Activity2 extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        App.bus.register(this);
+    }
+
+    @Override
+    public List<RetroSubscriber> getSubscribers() {
         List<RetroSubscriber> subs = new ArrayList<>();
         subs.add(cachedRequest);
         subs.add(uncachedRequest);
         subs.add(uncachedRequestDebounced);
         subs.add(cachedRequestDebounced);
-        App.bus.register(this, subs);
+        return subs;
     }
 }
