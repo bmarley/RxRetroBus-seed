@@ -18,24 +18,23 @@ public class RxRetroBus {
     ConcurrentHashMap<String, List<RetroSubscriber>> subscribersByTag = new ConcurrentHashMap<>();
     ConcurrentHashMap<String, Request> resultsByTag = new ConcurrentHashMap<>();
 
-    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final String tag,
-                                  final boolean cacheResult, final boolean debounce) {
+    public <T> void addObservable(Observable<T> observable, final Class<T> clazz, final Publish request) {
 
         Consumer<T> onNext = new Consumer<T>() {
             @Override
             public void accept(T response) throws Exception {
-                if (cacheResult) {
-                    resultsByTag.put(tag, new Request<>(response, null, false));
-                    Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
+                if (request.isCached()) {
+                    resultsByTag.put(request.getTag(), new Request<>(response, null, false));
+                    Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
                 } else {
-                    resultsByTag.remove(tag);
-                    Log.d("RxRetroBus", "Removing " + tag + " from resultsByTag");
+                    resultsByTag.remove(request.getTag());
+                    Log.d("RxRetroBus", "Removing " + request.getTag() + " from resultsByTag");
                 }
 
-                List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+                List<RetroSubscriber> subscribers = subscribersByTag.get(request.getTag());
                 if (subscribers != null) {
                     for (RetroSubscriber subscriber : subscribers) {
-                        postSuccess(subscriber, response, tag);
+                        postSuccess(subscriber, response, request.getTag());
                     }
                 }
             }
@@ -44,15 +43,15 @@ public class RxRetroBus {
         Consumer<Throwable> onError = new Consumer<Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
-                if (cacheResult) {
-                    resultsByTag.put(tag, new Request<>(null, throwable, false));
-                    Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
+                if (request.isCached()) {
+                    resultsByTag.put(request.getTag(), new Request<>(null, throwable, false));
+                    Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
                 } else {
-                    resultsByTag.remove(tag);
-                    Log.d("RxRetroBus", "Removing " + tag + " from resultsByTag");
+                    resultsByTag.remove(request.getTag());
+                    Log.d("RxRetroBus", "Removing " + request.getTag() + " from resultsByTag");
                 }
 
-                List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+                List<RetroSubscriber> subscribers = subscribersByTag.get(request.getTag());
                 if (subscribers != null) {
                     for (RetroSubscriber subscriber : subscribers) {
                         postError(subscriber, throwable);
@@ -63,16 +62,16 @@ public class RxRetroBus {
 
         // If debounce is true and the request has not yet returned,
         // do not make the call again, regardless of whether it is cacheable
-        if (debounce && (resultsByTag.get(tag) != null && resultsByTag.get(tag).isLoading())) {
+        if (request.isDebounced() && (resultsByTag.get(request.getTag()) != null && resultsByTag.get(request.getTag()).isLoading())) {
             return;
         }
 
-        resultsByTag.put(tag, new Request<>(null, null, true));
-        Log.d("RxRetroBus", "Adding " + tag + " to resultsByTag");
+        resultsByTag.put(request.getTag(), new Request<>(null, null, true));
+        Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
 
-        List<RetroSubscriber> subscribers = subscribersByTag.get(tag);
+        List<RetroSubscriber> subscribers = subscribersByTag.get(request.getTag());
         if (subscribers != null) {
-            for (RetroSubscriber subscriber : subscribersByTag.get(tag)) {
+            for (RetroSubscriber subscriber : subscribersByTag.get(request.getTag())) {
                 subscriber.onLoading();
             }
         }
