@@ -3,9 +3,9 @@ package com.blarley.rxretrobusseed.annotationprocessor.processor;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +27,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        Map<String, Boolean> generatedClasses = new ConcurrentHashMap<>();
+        List<GeneratedClass> generatedClasses = new ArrayList<>();
         String generatedPrefix = "RxRetroBus_";
 
         // Get the Retrofit interfaces annotated with GenerateEvents
@@ -40,7 +40,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             String generatedClassName = generatedPrefix + baseClassName;
 
             // Add generated Class to create Clients file
-            generatedClasses.put(generatedClassName, generateEvents.retrofit());
+            generatedClasses.add(new GeneratedClass(generatedClassName, generateEvents.retrofit()));
 
             String baseUrl = generateEvents.baseUrl();
 
@@ -159,8 +159,8 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         StringBuilder constructorDefinition = new StringBuilder();
 
         // Append the instance fields
-        for (String generatedClass : generatedClasses.keySet()) {
-            String[] str = generatedClass.split("_");
+        for (GeneratedClass generatedClass : generatedClasses) {
+            String[] str = generatedClass.getName().split("_");
             String baseClassName = str[1];
             clientsFile.append(
                     "\tpublic "
@@ -169,7 +169,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                             + baseClassName
                             + ";\n");
 
-            if (generatedClasses.get(generatedClass)) {
+            if (generatedClass.isRetrofitEnabled()) {
                 constructorDefinition.append(
                         "\t\tthis."
                                 + baseClassName
@@ -209,5 +209,26 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+
+    class GeneratedClass {
+        private String name;
+        private Boolean retrofitEnabled;
+
+        public GeneratedClass(String name, Boolean retrofitEnabled) {
+            this.name = name;
+            this.retrofitEnabled = retrofitEnabled;
+        }
+
+
+        public String getName() {
+            return name;
+        }
+
+
+        public Boolean isRetrofitEnabled() {
+            return retrofitEnabled;
+        }
     }
 }
