@@ -1,17 +1,15 @@
 package com.blarley.rxretrobusseed.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.blarley.rxretrobusseed.App;
+
 import blake.rxretrobusseed.R;
 
 public class Activity1 extends AppCompatActivity {
-
-    private Context self = this;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,8 +18,14 @@ public class Activity1 extends AppCompatActivity {
         findViewById(R.id.start_activity_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(self, Activity2.class));
+                startActivity(new Intent(Activity1.this, Activity2.class));
                 overridePendingTransition(0, 0);
+            }
+        });
+        findViewById(R.id.setup_bomb_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                App.clients.ClickEvent.eventClicked();
             }
         });
     }
