@@ -4,11 +4,13 @@ public class Request<T> {
     private T success;
     private Throwable error;
     private Boolean loading;
+    private Boolean sticky;
 
-    public Request(T success, Throwable error, Boolean loading) {
+    public Request(T success, Throwable error, Boolean loading, Boolean sticky) {
         this.success = success;
         this.loading = loading;
         this.error = error;
+        this.sticky = sticky;
     }
 
     public T getSuccess() {
@@ -26,6 +28,17 @@ public class Request<T> {
     public void setError(Throwable error) {
         this.error = error;
     }
+
+
+    public Boolean isSticky() {
+        return sticky;
+    }
+
+
+    public void setSticky(Boolean sticky) {
+        this.sticky = sticky;
+    }
+
 
     public Boolean isError() {
         return this.error != null;
