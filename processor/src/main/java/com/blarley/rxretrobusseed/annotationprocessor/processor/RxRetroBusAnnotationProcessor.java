@@ -63,15 +63,13 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                 builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
                         "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
                         "\t\t\t\t.build()\n" +
-                        "\t\t\t\t.create(" + baseType + ".class);\n" +
-                        "\t\tthis.bus = bus;\n" +
-                        "\t}\n\n");
+                        "\t\t\t\t.create(" + baseType + ".class);\n");
             } else {
                 builder.append("\tpublic " + generatedClassName + "(RxRetroBus bus) { \n" +
-                        "\t\tthis.client = new " + baseType + "();\n" +
-                        "\t\tthis.bus = bus;\n" +
-                        "\t}\n\n");
+                        "\t\tthis.client = new " + baseType + "();\n");
             }
+
+            builder.append("\t\tthis.bus = bus;\n\t}\n\n");
 
             // Get Annotated methods within the class - the builds the method used to make calls
             for (Element subElement : element.getEnclosedElements()) {
@@ -162,28 +160,19 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
         for (GeneratedClass generatedClass : generatedClasses) {
             String[] str = generatedClass.getName().split("_");
             String baseClassName = str[1];
-            clientsFile.append(
-                    "\tpublic "
-                            + generatedClass.getName()
-                            + " "
-                            + baseClassName
-                            + ";\n");
+            clientsFile.append("\tpublic ")
+                    .append(generatedClass.getName())
+                    .append(" ")
+                    .append(baseClassName)
+                    .append(";\n");
 
-            if (generatedClass.isRetrofitEnabled()) {
-                constructorDefinition.append(
-                        "\t\tthis."
-                                + baseClassName
-                                + " = new "
-                                + generatedClass.getName()
-                                + "(retrofitBuilder, bus);\n");
-            } else {
-                constructorDefinition.append(
-                        "\t\tthis."
-                                + baseClassName
-                                + " = new "
-                                + generatedClass.getName()
-                                + "(bus);\n");
-            }
+            constructorDefinition.append("\t\tthis.")
+                    .append(baseClassName)
+                    .append(" = new ")
+                    .append(generatedClass.getName())
+                    .append(generatedClass.isRetrofitEnabled()
+                            ? "(retrofitBuilder, bus);\n"
+                            : "(bus);\n");
         }
 
         // Append the constructor declaration
