@@ -38,7 +38,7 @@ public class Activity2 extends AppCompatActivity implements RetroSubscriberRecei
 
 
 
-    RetroSubscriber<ExampleGetModel> click = new RetroSubscriber<ExampleGetModel>("click") {
+    RetroSubscriber<ExampleGetModel> setUpBomb = new RetroSubscriber<ExampleGetModel>("setUpBomb") {
         @Override
         public void onLoading() {
 
@@ -53,7 +53,7 @@ public class Activity2 extends AppCompatActivity implements RetroSubscriberRecei
 
         @Override
         public void onError(Throwable throwable) {
-
+            Toast.makeText(Activity2.this, "Something went wrong with the bomb...", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -213,7 +213,7 @@ public class Activity2 extends AppCompatActivity implements RetroSubscriberRecei
         subs.add(uncachedRequest);
         subs.add(uncachedRequestDebounced);
         subs.add(cachedRequestDebounced);
-        subs.add(click);
+        subs.add(setUpBomb);
         return subs;
     }
 }

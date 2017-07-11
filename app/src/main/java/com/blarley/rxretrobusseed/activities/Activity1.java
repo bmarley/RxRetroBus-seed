@@ -25,7 +25,7 @@ public class Activity1 extends AppCompatActivity {
         findViewById(R.id.setup_bomb_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                App.clients.ClickEvent.eventClicked();
+                App.clients.ClickEvent.setUpBomb();
             }
         });
     }

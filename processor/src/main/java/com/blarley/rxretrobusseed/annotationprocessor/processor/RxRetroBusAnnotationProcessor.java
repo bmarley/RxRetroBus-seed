@@ -46,13 +46,16 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
 
             // Package and imports
             StringBuilder builder = new StringBuilder()
-                .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
-                .append("import retrofit2.Retrofit;\n" +
-                        "import com.blarley.rxretrobusseed.library.bus.Publish;\n" +
-                        "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
+                    .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
+                    .append("import com.blarley.rxretrobusseed.library.bus.Publish;\n" +
+                            "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
+
+            if (generateEvents.retrofit()) {
+                builder.append("import retrofit2.Retrofit;\n");
+            }
 
             // Begin class definition
-            builder.append("public class " + generatedClassName + " {\n\n");
+            builder.append("\npublic class " + generatedClassName + " {\n\n");
 
             // Retrofit client impl
             builder.append("\tprivate " + baseType + " client;\n");

@@ -9,8 +9,8 @@ import io.reactivex.Observable;
 @GenerateEvents(retrofit = false)
 public class ClickEvent {
 
-    @Publish(tag = "click", debounce = true, sticky = true)
-    public Observable<ExampleGetModel> eventClicked() {
+    @Publish(tag = "setUpBomb", debounce = true, sticky = true)
+    public Observable<ExampleGetModel> setUpBomb() {
         return Observable.just(new ExampleGetModel());
     }
 }
