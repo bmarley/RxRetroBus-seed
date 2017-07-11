@@ -91,15 +91,15 @@ public class RxRetroBus {
             String tag = subscriber.getTag();
             Request cachedResponse = resultsByTag.get(subscriber.getTag());
             if (cachedResponse != null) {
-                if (cachedResponse.isError()) {
-                    postError(subscriber, cachedResponse.getError());
-                    if (cachedResponse.isSticky()) {
-                        resultsByTag.remove(tag);
-                    }
-                } else if (cachedResponse.isLoading()) {
+                if (cachedResponse.isLoading()) {
                     postLoading(subscriber);
                 } else {
-                    postSuccess(subscriber, cachedResponse.getSuccess(), tag);
+                    if (cachedResponse.isError()) {
+                        postError(subscriber, cachedResponse.getError());
+                    } else {
+                        postSuccess(subscriber, cachedResponse.getSuccess(), tag);
+                    }
+
                     if (cachedResponse.isSticky()) {
                         resultsByTag.remove(tag);
                     }
