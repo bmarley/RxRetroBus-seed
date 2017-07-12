@@ -24,169 +24,258 @@ import javax.tools.JavaFileObject;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
 
+    private final String generatedPrefix = "RxRetroBus_";
+    private List<GeneratedClass> generatedClasses = new ArrayList<>();
+
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        generateEventFiles(roundEnv);
+        generateClientsFile();
+        return true;
+    }
 
-        List<GeneratedClass> generatedClasses = new ArrayList<>();
-        String generatedPrefix = "RxRetroBus_";
 
+    private void generateEventFiles(RoundEnvironment roundEnv) {
         // Get the Retrofit interfaces annotated with GenerateEvents
         for (Element element : roundEnv.getElementsAnnotatedWith(GenerateEvents.class)) {
-
+            String generatedClassName = generatedPrefix + element.getSimpleName().toString();
             GenerateEvents generateEvents = element.getAnnotation(GenerateEvents.class);
-
-            String baseType = element.asType().toString();
-            String baseClassName = element.getSimpleName().toString();
-            String generatedClassName = generatedPrefix + baseClassName;
-
-            // Add generated Class to create Clients file
             generatedClasses.add(new GeneratedClass(generatedClassName, generateEvents.retrofit()));
+            writeEventFile(element);
+        }
+    }
 
-            String baseUrl = generateEvents.baseUrl();
 
-            // Package and imports
-            StringBuilder builder = new StringBuilder()
-                    .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
-                    .append("import com.blarley.rxretrobusseed.library.bus.*;\n" +
-                            "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
+    private void writeEventFile(Element element) {
+        try {
+            JavaFileObject source = processingEnv.getFiler()
+                    .createSourceFile(
+                            "com.blarley.rxretrobusseed.annotationprocessor.generated."
+                                    + generatedPrefix + element.getSimpleName().toString());
 
-            if (generateEvents.retrofit()) {
-                builder.append("import retrofit2.Retrofit;\n");
-            }
+            Writer writer = source.openWriter();
+            writer.write(generateEventFilesHelper(element).toString());
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-            // Begin class definition
-            builder.append("\npublic class " + generatedClassName + " {\n\n");
 
-            // Retrofit client impl
-            builder.append("\tprivate " + baseType + " client;\n");
-            builder.append("\tprivate RxRetroBus bus;\n\n");
+    private StringBuilder generateEventFilesHelper(Element element) {
+        GenerateEvents generateEvents = element.getAnnotation(GenerateEvents.class);
+        String baseUrl = generateEvents.baseUrl();
+        String baseType = element.asType().toString();
+        String baseClassName = element.getSimpleName().toString();
+        String generatedClassName = generatedPrefix + baseClassName;
 
-            if (generateEvents.retrofit()) {
-                // Constructor - builds Retrofit client
-                builder.append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
-                        "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
-                        "\t\t\t\t.build()\n" +
-                        "\t\t\t\t.create(" + baseType + ".class);\n");
-            } else {
-                builder.append("\tpublic " + generatedClassName + "(RxRetroBus bus) { \n" +
-                        "\t\tthis.client = new " + baseType + "();\n");
-            }
+        return new StringBuilder()
+                .append(addEventImports(generateEvents.retrofit()))
+                .append(addEventClassHeader(generatedClassName))
+                .append(addEventFields(baseType))
+                .append(addEventConstructor(generateEvents.retrofit(), generatedClassName, baseType, baseUrl))
+                .append(addEventMethods(element))
+                .append("}\n");
+    }
 
-            builder.append("\t\tthis.bus = bus;\n\t}\n\n");
 
-            // Get Annotated methods within the class - the builds the method used to make calls
-            for (Element subElement : element.getEnclosedElements()) {
+    private StringBuilder addEventImports(boolean includeRetrofit) {
+        return new StringBuilder()
+                .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
+                .append("import com.blarley.rxretrobusseed.library.bus.*;\n")
+                .append("import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n")
+                .append(includeRetrofit ? "import retrofit2.Retrofit;\n" : "");
+    }
 
-                // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
-                if (subElement instanceof ExecutableElement) {
 
-                    FireAndForgetEvent fireAndForgetEvent = subElement.getAnnotation(FireAndForgetEvent.class);
-                    CachedEvent cachedEvent = subElement.getAnnotation(CachedEvent.class);
-                    UncachedEvent uncachedEvent = subElement.getAnnotation(UncachedEvent.class);
+    private StringBuilder addEventClassHeader(String generatedClassName) {
+        return new StringBuilder()
+                .append("\npublic class " + generatedClassName + " {\n\n");
+    }
 
-                    if (fireAndForgetEvent != null || cachedEvent != null || uncachedEvent != null) {
 
-                        // Cast to ExecutableElement in order to get Parameters
-                        ExecutableElement method = (ExecutableElement) subElement;
-                        String methodName = method.getSimpleName().toString();
+    private StringBuilder addEventFields(String baseType) {
+        return new StringBuilder()
+                .append("\tprivate " + baseType + " client;\n")
+                .append("\tprivate RxRetroBus bus;\n\n");
+    }
 
-                        // Begin definition of method
-                        builder.append("\tpublic void " + methodName + "(");
 
-                        // Append parameters to method definition - TODO: Figure out how this can break
-                        String delim = "";
-                        StringBuilder params = new StringBuilder();
-                        StringBuilder args = new StringBuilder();
-                        for (VariableElement param : method.getParameters()) {
-                            params.append(delim)
-                                    .append(param.asType() + " ")
-                                    .append(param.getSimpleName().toString());
+    private StringBuilder addEventConstructor(boolean includeRetrofit, String generatedClassName,
+                                              String baseType, String baseUrl) {
+        StringBuilder sb = includeRetrofit
+                ? new StringBuilder().append("\tpublic " + generatedClassName + "(Retrofit.Builder retrofitBuilder, RxRetroBus bus) { \n" +
+                "\t\tthis.client = retrofitBuilder.baseUrl(\"" + baseUrl + "\")\n" +
+                "\t\t\t\t.build()\n" +
+                "\t\t\t\t.create(" + baseType + ".class);\n")
+                : new StringBuilder().append("\tpublic " + generatedClassName + "(RxRetroBus bus) { \n" +
+                "\t\tthis.client = new " + baseType + "();\n");
+        return sb.append("\t\tthis.bus = bus;\n\t}\n\n");
+    }
 
-                            args.append(delim)
-                                    .append(param.getSimpleName().toString());
-                            delim = ", ";
-                        }
 
-                        // Append the parameters to the method definition and open declaration
-                        builder.append(params)
-                                .append(") {\n");
+    private StringBuilder addEventMethods(Element element) {
+        StringBuilder builder = new StringBuilder();
+        for (Element subElement : element.getEnclosedElements()) {
 
-                        // Need to strip off the Observable and get parameterized class
-                        // TODO: Is this a better way to do this?
-                        String observable = method.getReturnType().toString();
-                        Pattern regex = Pattern.compile("<(.*?)>");
-                        Matcher matcher = regex.matcher(observable);
-                        String innerClass = "";
-                        while (matcher.find()) {
-                            innerClass += matcher.group(1);
-                        }
+            // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
+            if (subElement instanceof ExecutableElement) {
 
-                        builder.append("\t\tbus.addObservable(client." + methodName + "(")
-                                .append(args)
-                                .append("), ")
-                                .append(innerClass + ".class, ");
+                FireAndForgetEvent fireAndForgetEvent = subElement.getAnnotation(FireAndForgetEvent.class);
+                CachedEvent cachedEvent = subElement.getAnnotation(CachedEvent.class);
+                UncachedEvent uncachedEvent = subElement.getAnnotation(UncachedEvent.class);
 
-                        if (fireAndForgetEvent != null) {
-                            builder.append("new FireAndForgetEvent(")
-                                    .append("\"" + fireAndForgetEvent.tag() + "\", ")
-                                    .append(fireAndForgetEvent.debounce() + "));\n");
-
-                        } else if (cachedEvent != null) {
-                            builder.append("new CachedEvent(")
-                                    .append("\"" + cachedEvent.tag() + "\", ")
-                                    .append(cachedEvent.debounce() + "));\n");
-
-                        } else if (uncachedEvent != null) {
-                            builder.append("new UncachedEvent(")
-                                    .append("\"" + uncachedEvent.tag() + "\", ")
-                                    .append(uncachedEvent.debounce() + ", ")
-                                    .append(uncachedEvent.sticky() + "));\n");
-                        }
-
-                        // End method definition
-                        builder.append("\t}\n\n");
-                    }
+                if (fireAndForgetEvent != null || cachedEvent != null || uncachedEvent != null) {
+                    ExecutableElement method = (ExecutableElement) subElement;  // Cast to access Parameters
+                    builder.append(addEventMethodHeader(method.getSimpleName().toString()))
+                            .append(addParams(method))
+                            .append(") {\n")
+                            .append(addMethodCalls(method, addArgs(method)))
+                            .append(addAnnotationModelInstantiation(fireAndForgetEvent, cachedEvent, uncachedEvent))
+                            .append("\t}\n\n");
                 }
             }
-
-            // End Class definition
-            builder.append("}\n");
-
-            // Write the file
-            try {
-                JavaFileObject source = processingEnv.getFiler()
-                        .createSourceFile(
-                                "com.blarley.rxretrobusseed.annotationprocessor.generated."
-                                        + generatedClassName);
-
-                Writer writer = source.openWriter();
-                writer.write(builder.toString());
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
+        return builder;
+    }
 
-        // Clients String builder
-        StringBuilder clientsFile = new StringBuilder()
+
+    // Append parameters to method definition - TODO: Figure out how this can break
+    private StringBuilder addParams(ExecutableElement method) {
+        String delim = "";
+        StringBuilder params = new StringBuilder();
+        for (VariableElement param : method.getParameters()) {
+            params.append(delim)
+                    .append(param.asType() + " ")
+                    .append(param.getSimpleName().toString());
+            delim = ", ";
+        }
+        return params;
+    }
+
+
+    // Append parameters to method definition - TODO: Figure out how this can break
+    private StringBuilder addArgs(ExecutableElement method) {
+        String delim = "";
+        StringBuilder args = new StringBuilder();
+        for (VariableElement arg : method.getParameters()) {
+            args.append(delim)
+                    .append(arg.getSimpleName().toString());
+            delim = ", ";
+        }
+        return args;
+    }
+
+
+    private StringBuilder addMethodCalls(ExecutableElement method, StringBuilder args) {
+        // Need to strip off the Observable and get parameterized class
+        // TODO: Is this a better way to do this?
+        String observable = method.getReturnType().toString();
+        Pattern regex = Pattern.compile("<(.*?)>");
+        Matcher matcher = regex.matcher(observable);
+        String innerClass = "";
+        while (matcher.find()) {
+            innerClass += matcher.group(1);
+        }
+        return new StringBuilder().append("\t\tbus.addObservable(client." + method.getSimpleName().toString() + "(")
+                .append(args)
+                .append("), ")
+                .append(innerClass + ".class, ");
+    }
+
+
+    private StringBuilder addAnnotationModelInstantiation(FireAndForgetEvent fireAndForgetEvent,
+                                                          CachedEvent cachedEvent, UncachedEvent uncachedEvent) {
+        StringBuilder sb = new StringBuilder();
+        if (fireAndForgetEvent != null) {
+            sb.append("new FireAndForgetEvent(")
+                    .append("\"" + fireAndForgetEvent.tag() + "\", ")
+                    .append(fireAndForgetEvent.debounce() + "));\n");
+        } else if (cachedEvent != null) {
+            sb.append("new CachedEvent(")
+                    .append("\"" + cachedEvent.tag() + "\", ")
+                    .append(cachedEvent.debounce() + "));\n");
+        } else if (uncachedEvent != null) {
+            sb.append("new UncachedEvent(")
+                    .append("\"" + uncachedEvent.tag() + "\", ")
+                    .append(uncachedEvent.debounce() + ", ")
+                    .append(uncachedEvent.sticky() + "));\n");
+        }
+        return sb;
+    }
+
+
+    private StringBuilder addEventMethodHeader(String methodName) {
+        return new StringBuilder().append("\tpublic void " + methodName + "(");
+    }
+
+
+    private void generateClientsFile() {
+        try {
+            JavaFileObject source = processingEnv.getFiler()
+                    .createSourceFile(
+                            "com.blarley.rxretrobusseed.annotationprocessor.generated.Clients");
+            Writer writer = source.openWriter();
+            writer.write(generateClientsFileHelper().toString());
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private StringBuilder generateClientsFileHelper() {
+        return addClientsImports()
+                .append(addClientsClassHeader())
+                .append(addClientsFields())
+                .append(addClientsConstructorHeader())
+                .append(addClientsConstructorBody())
+                .append(addClientsFooter());
+    }
+
+
+    private StringBuilder addClientsImports() {
+        return new StringBuilder()
                 .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
                 .append("import retrofit2.Retrofit;\n\n")
-                .append("import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n\n")
-                .append("public class Clients {\n");
+                .append("import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n\n");
+    }
 
-        StringBuilder constructorDefinition = new StringBuilder();
 
-        // Append the instance fields
+    private StringBuilder addClientsClassHeader() {
+        return new StringBuilder().append("public class Clients {\n");
+    }
+
+
+    private StringBuilder addClientsFields() {
+        StringBuilder sb = new StringBuilder();
         for (GeneratedClass generatedClass : generatedClasses) {
             String[] str = generatedClass.getName().split("_");
             String baseClassName = str[1];
-            clientsFile.append("\tpublic ")
+            sb.append("\tpublic ")
                     .append(generatedClass.getName())
                     .append(" ")
                     .append(baseClassName)
                     .append(";\n");
+        }
+        return sb;
+    }
 
+
+    private StringBuilder addClientsConstructorHeader() {
+        return new StringBuilder()
+                .append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder, RxRetroBus bus) {\n");
+    }
+
+
+    private StringBuilder addClientsConstructorBody() {
+        StringBuilder constructorDefinition = new StringBuilder();
+        for (GeneratedClass generatedClass : generatedClasses) {
+            String[] str = generatedClass.getName().split("_");
+            String baseClassName = str[1];
             constructorDefinition.append("\t\tthis.")
                     .append(baseClassName)
                     .append(" = new ")
@@ -195,36 +284,20 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                             ? "(retrofitBuilder, bus);\n"
                             : "(bus);\n");
         }
+        return constructorDefinition;
+    }
 
-        // Append the constructor declaration
-        clientsFile.append("\n\tpublic Clients(Retrofit.Builder retrofitBuilder, RxRetroBus bus) {\n");
 
-        // Append the constructor definition
-        clientsFile.append(constructorDefinition);
-
-        // Close the constructor and class
-        clientsFile.append("\t}\n")
-                .append("}");
-
-        // Write the file
-        try {
-            JavaFileObject source = processingEnv.getFiler()
-                    .createSourceFile(
-                            "com.blarley.rxretrobusseed.annotationprocessor.generated.Clients");
-            Writer writer = source.openWriter();
-            writer.write(clientsFile.toString());
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-        }
-
-        return true;
+    private StringBuilder addClientsFooter() {
+        return new StringBuilder().append("\t}\n").append("}");
     }
 
 
     class GeneratedClass {
+
         private String name;
         private Boolean retrofitEnabled;
+
 
         public GeneratedClass(String name, Boolean retrofitEnabled) {
             this.name = name;
