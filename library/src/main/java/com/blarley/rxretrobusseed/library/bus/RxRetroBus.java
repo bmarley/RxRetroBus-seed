@@ -66,8 +66,10 @@ public class RxRetroBus {
             return;
         }
 
-        resultsByTag.put(request.getTag(), new Request<>(null, null, true, request.isSticky()));
-        Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
+        if (!request.isFireAndForget()) {
+            resultsByTag.put(request.getTag(), new Request<>(null, null, true, request.isSticky()));
+            Log.d("RxRetroBus", "Adding " + request.getTag() + " to resultsByTag");
+        }
 
         List<RetroSubscriber> subscribers = subscribersByTag.get(request.getTag());
         if (subscribers != null) {

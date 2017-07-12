@@ -9,12 +9,15 @@ abstract public class Publish {
     private boolean cached;
     private boolean debounced;
     private boolean sticky;
+    private boolean fireAndForget;
 
-    public Publish(String tag, boolean cached, boolean debounced, boolean sticky) {
+
+    public Publish(String tag, boolean cached, boolean debounced, boolean sticky, boolean fireAndForget) {
         this.tag = tag;
         this.cached = cached;
         this.debounced = debounced;
         this.sticky = sticky;
+        this.fireAndForget = fireAndForget;
     }
 
 
@@ -35,5 +38,10 @@ abstract public class Publish {
 
     public boolean isSticky() {
         return sticky;
+    }
+
+
+    public boolean isFireAndForget() {
+        return fireAndForget;
     }
 }

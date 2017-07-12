@@ -7,6 +7,6 @@ package com.blarley.rxretrobusseed.library.bus;
 public class CachedEvent extends Publish {
 
     public CachedEvent(String tag, boolean debounced) {
-        super(tag, true, debounced, false);
+        super(tag, true, debounced, false, false);
     }
 }

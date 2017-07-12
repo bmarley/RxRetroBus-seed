@@ -7,6 +7,6 @@ package com.blarley.rxretrobusseed.library.bus;
 public class FireAndForgetEvent extends Publish {
 
     public FireAndForgetEvent(String tag, boolean debounced) {
-        super(tag, false, debounced, false);
+        super(tag, false, debounced, false, true);
     }
 }
