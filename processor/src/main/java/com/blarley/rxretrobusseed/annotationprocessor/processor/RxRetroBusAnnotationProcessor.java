@@ -80,6 +80,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                 // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
                 if (subElement instanceof ExecutableElement) {
 
+                    // TODO: 7/12/17 - Validate that multiple event types are not on a method
                     FireAndForgetEvent fireAndForgetEvent = subElement.getAnnotation(FireAndForgetEvent.class);
                     CachedEvent cachedEvent = subElement.getAnnotation(CachedEvent.class);
                     UncachedEvent uncachedEvent = subElement.getAnnotation(UncachedEvent.class);
