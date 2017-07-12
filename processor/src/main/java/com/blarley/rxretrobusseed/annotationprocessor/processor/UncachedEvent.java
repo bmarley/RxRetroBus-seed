@@ -4,9 +4,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface Publish {
+public @interface UncachedEvent {
     String tag();
-    boolean cache() default false;
     boolean debounce() default false;
     boolean sticky() default false;
 }

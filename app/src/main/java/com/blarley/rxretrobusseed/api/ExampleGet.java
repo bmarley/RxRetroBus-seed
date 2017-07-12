@@ -1,6 +1,7 @@
 package com.blarley.rxretrobusseed.api;
 
-import com.blarley.rxretrobusseed.annotationprocessor.processor.Publish;
+import com.blarley.rxretrobusseed.annotationprocessor.processor.CachedEvent;
+import com.blarley.rxretrobusseed.annotationprocessor.processor.UncachedEvent;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 import com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents;
 
@@ -14,10 +15,10 @@ import retrofit2.http.GET;
 @GenerateEvents(baseUrl = "http://api.blarley.com/")
 public interface ExampleGet {
     @GET("example-get")
-    @Publish(tag = "getUncachedRequest")
+    @UncachedEvent(tag = "getUncachedRequest", sticky = true)
     Observable<ExampleGetModel> getUncachedRequest();
 
     @GET("example-get")
-    @Publish(tag = "getCachedRequest", cache = true)
+    @CachedEvent(tag = "getCachedRequest")
     Observable<ExampleGetModel> getCachedRequest();
 }

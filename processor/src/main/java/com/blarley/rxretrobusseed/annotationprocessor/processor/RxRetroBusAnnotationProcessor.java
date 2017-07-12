@@ -47,7 +47,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             // Package and imports
             StringBuilder builder = new StringBuilder()
                     .append("package com.blarley.rxretrobusseed.annotationprocessor.generated;\n\n")
-                    .append("import com.blarley.rxretrobusseed.library.bus.Publish;\n" +
+                    .append("import com.blarley.rxretrobusseed.library.bus.*;\n" +
                             "import com.blarley.rxretrobusseed.library.bus.RxRetroBus;\n");
 
             if (generateEvents.retrofit()) {
@@ -78,57 +78,75 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
             for (Element subElement : element.getEnclosedElements()) {
 
                 // ExecutableElements represent methods (among other things) - TODO: Figure out how this can break
-                if (subElement instanceof ExecutableElement && subElement.getAnnotation(Publish.class) != null) {
+                if (subElement instanceof ExecutableElement) {
 
-                    // Cast to ExecutableElement in order to get Parameters
-                    ExecutableElement method = (ExecutableElement) subElement;
-                    String methodName = method.getSimpleName().toString();
+                    // TODO: 7/12/17 - Validate that multiple event types are not on a method
+                    FireAndForgetEvent fireAndForgetEvent = subElement.getAnnotation(FireAndForgetEvent.class);
+                    CachedEvent cachedEvent = subElement.getAnnotation(CachedEvent.class);
+                    UncachedEvent uncachedEvent = subElement.getAnnotation(UncachedEvent.class);
 
-                    // Begin definition of method
-                    builder.append("\tpublic void " + methodName + "(");
+                    if (fireAndForgetEvent != null || cachedEvent != null || uncachedEvent != null) {
 
-                    // Append parameters to method definition - TODO: Figure out how this can break
-                    String delim = "";
-                    StringBuilder params = new StringBuilder();
-                    StringBuilder args = new StringBuilder();
-                    for (VariableElement param : method.getParameters()) {
-                        params.append(delim)
-                                .append(param.asType() + " ")
-                                .append(param.getSimpleName().toString());
+                        // Cast to ExecutableElement in order to get Parameters
+                        ExecutableElement method = (ExecutableElement) subElement;
+                        String methodName = method.getSimpleName().toString();
 
-                        args.append(delim)
-                                .append(param.getSimpleName().toString());
-                        delim = ", ";
+                        // Begin definition of method
+                        builder.append("\tpublic void " + methodName + "(");
+
+                        // Append parameters to method definition - TODO: Figure out how this can break
+                        String delim = "";
+                        StringBuilder params = new StringBuilder();
+                        StringBuilder args = new StringBuilder();
+                        for (VariableElement param : method.getParameters()) {
+                            params.append(delim)
+                                    .append(param.asType() + " ")
+                                    .append(param.getSimpleName().toString());
+
+                            args.append(delim)
+                                    .append(param.getSimpleName().toString());
+                            delim = ", ";
+                        }
+
+                        // Append the parameters to the method definition and open declaration
+                        builder.append(params)
+                                .append(") {\n");
+
+                        // Need to strip off the Observable and get parameterized class
+                        // TODO: Is this a better way to do this?
+                        String observable = method.getReturnType().toString();
+                        Pattern regex = Pattern.compile("<(.*?)>");
+                        Matcher matcher = regex.matcher(observable);
+                        String innerClass = "";
+                        while (matcher.find()) {
+                            innerClass += matcher.group(1);
+                        }
+
+                        builder.append("\t\tbus.addObservable(client." + methodName + "(")
+                                .append(args)
+                                .append("), ")
+                                .append(innerClass + ".class, ");
+
+                        if (fireAndForgetEvent != null) {
+                            builder.append("new FireAndForgetEvent(")
+                                    .append("\"" + fireAndForgetEvent.tag() + "\", ")
+                                    .append(fireAndForgetEvent.debounce() + "));\n");
+
+                        } else if (cachedEvent != null) {
+                            builder.append("new CachedEvent(")
+                                    .append("\"" + cachedEvent.tag() + "\", ")
+                                    .append(cachedEvent.debounce() + "));\n");
+
+                        } else if (uncachedEvent != null) {
+                            builder.append("new UncachedEvent(")
+                                    .append("\"" + uncachedEvent.tag() + "\", ")
+                                    .append(uncachedEvent.debounce() + ", ")
+                                    .append(uncachedEvent.sticky() + "));\n");
+                        }
+
+                        // End method definition
+                        builder.append("\t}\n\n");
                     }
-
-                    // Append the parameters to the method definition and open declaration
-                    builder.append(params)
-                            .append(") {\n");
-
-                    // Need to strip off the Observable and get parameterized class
-                    // TODO: Is this a better way to do this?
-                    String observable = method.getReturnType().toString();
-                    Pattern regex = Pattern.compile("<(.*?)>");
-                    Matcher matcher = regex.matcher(observable);
-                    String innerClass = "";
-                    while (matcher.find()) {
-                        innerClass += matcher.group(1);
-                    }
-
-                    Publish annotation = method.getAnnotation(Publish.class); // TODO: Build a model for this and pass that into the method
-
-                    builder.append("\t\tbus.addObservable(client." + methodName + "(")
-                            .append(args)
-                            .append("), ")
-                            .append(innerClass + ".class, ")
-                            .append("new Publish(")
-                            .append("\"" + annotation.tag() + "\", ")
-                            .append(annotation.cache() + ", ")
-                            .append(annotation.debounce() + ", ")
-                            .append(annotation.sticky() + "));\n");
-
-                    // End method definition
-                    builder.append("\t}\n\n");
                 }
             }
 
@@ -147,6 +165,7 @@ public class RxRetroBusAnnotationProcessor extends AbstractProcessor {
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
