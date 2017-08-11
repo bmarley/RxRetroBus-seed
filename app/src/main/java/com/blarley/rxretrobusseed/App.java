@@ -2,9 +2,8 @@ package com.blarley.rxretrobusseed;
 
 import android.app.Application;
 
-import com.blarley.rxretrobusseed.annotationprocessor.generated.Clients;
-import com.blarley.rxretrobusseed.library.bus.RxRetroBus;
-
+import com.blarley.rxretrobus.processor.generated.Clients;
+import com.blarley.rxretrobus.RxRetroBus;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

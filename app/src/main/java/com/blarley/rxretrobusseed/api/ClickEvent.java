@@ -1,7 +1,7 @@
 package com.blarley.rxretrobusseed.api;
 
-import com.blarley.rxretrobusseed.annotationprocessor.processor.GenerateEvents;
-import com.blarley.rxretrobusseed.annotationprocessor.processor.UncachedEvent;
+import com.blarley.rxretrobus.annotations.GenerateEvents;
+import com.blarley.rxretrobus.annotations.UncachedEvent;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 
 import io.reactivex.Observable;

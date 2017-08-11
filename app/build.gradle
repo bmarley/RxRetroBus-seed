@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         applicationId "com.blarley.rxretrobusseed"
@@ -31,24 +31,13 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile files('libs/processor.jar')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.1'
-
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-jackson:2.2.0'
     compile 'com.squareup.retrofit2:adapter-rxjava2:2.2.0'
-
     compile 'io.reactivex.rxjava2:rxjava:2.0.4'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile project(path: ':library')
-    compile project(path: ':processor')
+    annotationProcessor 'com.blarley.rxretrobus:rxretrobus-processor:0.5.0'
+    compile 'com.blarley.rxretrobus:rxretrobus:0.5.0'
 }
-
-task processorTask(type: Exec) {
-    commandLine 'cp', '../processor/build/libs/processor.jar', 'libs/'
-}
-
-processorTask.dependsOn(':processor:build')
-preBuild.dependsOn(processorTask)

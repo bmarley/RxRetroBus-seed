@@ -9,8 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blarley.rxretrobusseed.App;
-import com.blarley.rxretrobusseed.library.bus.RetroSubscriber;
-import com.blarley.rxretrobusseed.library.bus.RetroSubscriberReceiver;
+import com.blarley.rxretrobus.RetroSubscriber;
+import com.blarley.rxretrobus.RetroSubscriberReceiver;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 
 import java.util.ArrayList;
