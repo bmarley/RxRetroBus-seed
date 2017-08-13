@@ -29,16 +29,4 @@ public class Activity1 extends BoomSubscriber {
             }
         });
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        App.bus.unregister(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        App.bus.register(this);
-    }
 }

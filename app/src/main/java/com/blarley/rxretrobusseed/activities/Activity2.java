@@ -239,18 +239,6 @@ public class Activity2 extends BoomSubscriber {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        App.bus.unregister(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        App.bus.register(this);
-    }
-
-    @Override
     public List<RetroSubscriber> getSubscribers() {
         List<RetroSubscriber> subs = super.getSubscribers();
         subs.add(cachedRequest);

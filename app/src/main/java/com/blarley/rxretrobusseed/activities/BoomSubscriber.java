@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import com.blarley.rxretrobus.RetroSubscriber;
 import com.blarley.rxretrobus.RetroSubscriberReceiver;
+import com.blarley.rxretrobusseed.App;
 import com.blarley.rxretrobusseed.models.ExampleGetModel;
 
 import java.util.ArrayList;
@@ -36,5 +37,17 @@ public class BoomSubscriber extends AppCompatActivity implements RetroSubscriber
         List<RetroSubscriber> subs = new ArrayList<>();
         subs.add(catchBoom);
         return subs;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        App.bus.unregister(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        App.bus.register(this);
     }
 }
