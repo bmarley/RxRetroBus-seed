@@ -9,7 +9,7 @@ import com.blarley.rxretrobusseed.App;
 
 import blake.rxretrobusseed.R;
 
-public class Activity1 extends AppCompatActivity {
+public class Activity1 extends BoomSubscriber {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,5 +28,17 @@ public class Activity1 extends AppCompatActivity {
                 App.clients.ClickEvent.setUpBomb();
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        App.bus.unregister(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        App.bus.register(this);
     }
 }

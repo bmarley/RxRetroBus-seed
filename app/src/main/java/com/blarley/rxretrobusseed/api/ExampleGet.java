@@ -15,8 +15,12 @@ import retrofit2.http.GET;
 @GenerateEvents(baseUrl = "http://api.blarley.com/")
 public interface ExampleGet {
     @GET("example-get")
-    @UncachedEvent(tag = "getUncachedRequest", sticky = true)
-    Observable<ExampleGetModel> getUncachedRequest();
+    @UncachedEvent(tag = "getUncachedRequestSticky", sticky = true)
+    Observable<ExampleGetModel> getUncachedRequestSticky();
+
+    @GET("example-get")
+    @UncachedEvent(tag = "getUncachedRequestNonSticky")
+    Observable<ExampleGetModel> getUncachedRequestNonSticky();
 
     @GET("example-get")
     @CachedEvent(tag = "getCachedRequest")
