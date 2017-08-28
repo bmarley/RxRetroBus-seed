@@ -112,8 +112,7 @@ and define the observable yourself.
 #### UncachedEvent
 This event will not be cached by the Bus.
 Optionally you can supply the `sticky` flag to this annotation. Defaults to `false`; however, if set to `true` 
-it will cache the response until an Activity or Fragment subscribes that event. Once done, it will be 
-consumed and removed from the cache.
+it will cache the response until an Activity or Fragment subscribes to that tag and the event is consumed.  
 Optionally you can also specify whether you want to `debounce` the event.
 
 ```java
