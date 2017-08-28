@@ -7,8 +7,8 @@ The aim of RxRetroBus is to tie together [Square's Retrofit](http://square.githu
 [ReactiveX's RxJava](https://github.com/ReactiveX/RxJava) with simple annotations to eliminate 
 boilerplate and give the programmer an event based Bus that will manage the state of an application.
 
-By simply annotating a class with ```@GenerateEvents```, RxRetroBus' annotation processor will generate 
-a file that will tie together your defined Events and Bus, allowing you to subscribe to the event's tag 
+By annotating a class with ```@GenerateEvents```, RxRetroBus' annotation processor will generate 
+files tying together your defined Events and the Bus, allowing you to publish/subscribe to the event's tag 
 in your Activities and Fragments.
 
 ## How to Use
