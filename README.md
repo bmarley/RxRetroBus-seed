@@ -53,7 +53,7 @@ Dagger/Another DI injection framework to wire them into your classes.
 ### Annotations and Their Uses
 #### GenerateEvents
 Annotate Retrofit interfaces with this annotation, supply the baseUrl of the given API in the arguments. 
-As the name suggests, the baseUrl will be used as the base URL when building the retroface client.
+As the name suggests, the baseUrl will be used as the base URL when building the retrofit client.
 
 ```java
 @GenerateEvents(baseUrl = "http://api.blarley.com/")
