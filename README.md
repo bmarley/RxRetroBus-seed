@@ -48,7 +48,7 @@ However, ***for now*** also add these to your dependencies:
     Clients clients = new Clients(retrofitBuilder, bus);
 ```
 You'll need to either expose the clients and bus as static variables on the global App Object or use 
-Dagger/Another DI injection to wire them into your classes.
+Dagger/Another DI injection framework to wire them into your classes.
 
 ### Annotations and Their Uses
 #### GenerateEvents
