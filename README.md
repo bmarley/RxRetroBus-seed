@@ -44,7 +44,7 @@ However, ***for now*** also add these to your dependencies:
             .addConverterFactory(JacksonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(okHttpClient);
-    RxRetroBus bus; = new RxRetroBus();
+    RxRetroBus bus = new RxRetroBus();
     Clients clients = new Clients(retrofitBuilder, bus);
 ```
 You'll need to either expose the clients and bus as static variables on the global App Object or use 
