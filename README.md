@@ -167,10 +167,8 @@ RetroSubscribers.
 
 ### Subscribing
 Currently, any class that will subscribe to an RxRetroBus will need to `implements RetroSubscriberReceiver`.  
-This interface will force the class to implement `List<RetroSubscriber> getSubscribers();`, which is what 
-the bus looks for when a class subscribes.
-
-As this method suggests, it must return a list of `RetroSubscriber` objects.
+This interface will force the class to implement `List<RetroSubscriber> getSubscribers();`.  
+As this method suggests, it must return a list of `RetroSubscriber` objects. This is the method the bus calls to register subscribers.
 
 These look like this:
 ```java
