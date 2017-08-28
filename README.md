@@ -22,7 +22,7 @@ Add these two dependencies into your build.gradle file.
     compile 'com.blarley.rxretrobus:rxretrobus:0.5.1@aar'
 ```
 
-**Ideally you'd only need RxRetroBus and it's annotation processor as dependencies; however, you'll still need to include Retrofit in your base project - I'll remove the reliance on it 
+**Ideally you'd only need RxRetroBus and it's annotation processor as dependencies; however, for now you'll still need to include Retrofit in your base project - I'll remove the reliance on it 
 and RxJava in later versions.**
 
 However, ***for now*** also add these to your dependencies:
