@@ -38,6 +38,6 @@ dependencies {
     compile 'com.squareup.retrofit2:adapter-rxjava2:2.2.0'
     compile 'io.reactivex.rxjava2:rxjava:2.0.4'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    annotationProcessor 'com.blarley.rxretrobus:rxretrobus-processor:0.5.0'
-    compile 'com.blarley.rxretrobus:rxretrobus:0.5.0'
+    annotationProcessor 'com.blarley.rxretrobus:rxretrobus-processor:0.5.1'
+    compile 'com.blarley.rxretrobus:rxretrobus:0.5.1@aar'
 }
