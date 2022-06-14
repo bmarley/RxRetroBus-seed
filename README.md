@@ -71,8 +71,8 @@ would still like to manage the state of or would like to pub/sub with, even thou
 @GenerateEvents(retrofit = false)
 public class ClickEvent {
 
-    @UncachedEvent(tag = "setUpBomb", debounce = true, sticky = true)
-    public Observable<ExampleGetModel> setUpBomb() {
+    @UncachedEvent(tag = "setUpBoom", debounce = true, sticky = true)
+    public Observable<ExampleGetModel> setUpBoom() {
         return Observable.just(new ExampleGetModel()).delay(5, TimeUnit.SECONDS);
     }
 }
@@ -157,7 +157,7 @@ Using the ClickEvent example above.. The generated `Clients` object will contain
 match the names of your classes that you have annotated with `GenerateEvents`.  
 The method names on that object will match what you defined in your Retrofit interfaces/concrete classes.
 ```
-    clients.ClickEvent.setUpBomb()
+    clients.ClickEvent.setUpBoom()
 ```
 
 This will subscribe to the Observable that's returned. This will cause a loading event to be fired to 
@@ -171,7 +171,7 @@ As this method suggests, it must return a list of `RetroSubscriber` objects. Thi
 
 These look like this:
 ```java
-RetroSubscriber<ExampleGetModel> catchBoom = new RetroSubscriber<ExampleGetModel>("setUpBomb") {
+RetroSubscriber<ExampleGetModel> catchBoom = new RetroSubscriber<ExampleGetModel>("setUpBoom") {
     @Override
     public void onLoading() {
 
